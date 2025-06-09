@@ -41,9 +41,9 @@ cron.schedule("0 0 * * *", function() {
 // sendnotificationCheck()
 const port = process.env.PORT || 3000
 
-// app.get("/", (req,res) => {
-//     res.send("This api is working")
-// })
+app.get("/", (req,res) => {
+    res.send("This api is working")
+})
 
 app.use("/api",user);
 app.use("/api",car);
