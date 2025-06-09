@@ -1,0 +1,1 @@
+import{j as e,aq as t}from"./index-CiOuKirm.js";function r(){return e.jsxs(e.Fragment,{children:[e.jsx(t,{children:e.jsx("title",{children:" 404 Not Found!"})}),e.jsx("h1",{children:" 404 Not Found!"})]})}export{r as default};
