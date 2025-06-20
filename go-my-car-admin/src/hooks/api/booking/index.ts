@@ -1,10 +1,6 @@
-import {
-  cancelBookings,
-  getbookings
-} from '@/api/Bookings';
+
+import { cancelBookings, getbookings } from '@/api/bookings';
 import { useMutation, useQuery } from '@tanstack/react-query';
-
-
 
 export const useGetBookings = params => {
   return useQuery({
