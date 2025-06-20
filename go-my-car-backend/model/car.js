@@ -7,41 +7,52 @@ const carModal = new mongoose.Schema({
         require: true
     },
     carModal: {
-        type: Number,
+        type: Date,
         require: true
     },
     carGear: {
         type: String,
         require: true
     },
+    fastag: {
+        type: Boolean,
+         require: true
+    },
     carType: {
         type: String,
         require: true
     },
-    carSheet: {
-        type: String,
-        require: true
-    },
-    fastag: {
-        type: Boolean,
-        require: true
-    },
-    carPrice: {
-        type: Number,
-        require: true
+    price: {
+        price1hr: {
+            type: Number,
+            required: true
+        },
+        price8hr: {
+            type: Number,
+            required: true
+        },
+        price12hr: {
+            type: Number,
+            required: true
+        },
+        fullDay: {
+            type: Number,
+            required: true
+        }
     },
     isAvailable: {
         type: Boolean,
         require: true
     },
-    startDate: {
-        type: Date,
-        require: true
-    },
-    endDate: {
-        type: Date,
-        require: true
-    },
+    availableDates: [{
+        startDate: { type: Date, required: true },
+        endDate: { type: Date, required: true }
+    }],
+    unavailableDates: [{
+        startDate: { type: Date, },
+        endDate: { type: Date, }
+    }],
+
     location: {
         type: String,
         require: true
@@ -52,14 +63,30 @@ const carModal = new mongoose.Schema({
     },
     feature: {
         type: Object,
-        require:true
+        require: true
     },
     carImage: {
         type: Object,
-        require:true
+        require: true
+    },
+    chassicNo: {
+        type: String,
+    },
+    engineNo: {
+        type: String,
+    },
+    NumberPlate: {
+        type: String,
+    },
+    insuranceExpiry: {
+        type: Date
+    },
+    carColor: {
+        type: String
     }
+
 },
-{timestamps: true}
+    { timestamps: true }
 );
 carModal.plugin(aggregatePaginate);
 module.exports = mongoose.model("cars", carModal);

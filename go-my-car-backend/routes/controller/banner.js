@@ -32,7 +32,7 @@ const addCarImage = async (req, res) => {
 }
 const getCarImageList = async (req, res) => {
     try {
-        const cardetail = await banner.find({isSelected: true});
+        const cardetail = await banner.find({ isSelected: true });
         return SuccessOk(res, "CarBanner get successfully.", cardetail)
 
     } catch (error) {
@@ -42,14 +42,27 @@ const getCarImageList = async (req, res) => {
 }
 const getCarImage = async (req, res) => {
     try {
-         const { aggregate_options, options } = getDataByPaginate(req, '');
-                   
-                  
-                   const aggregateQuery = banner.aggregate(aggregate_options);
-                   const userdetail = await banner.aggregatePaginate(aggregateQuery, options);
-                   return SuccessOk(res, "CarBanner get successfully.", userdetail)
-           
-       
+        const { aggregate_options, options } = getDataByPaginate(req, '');
+        console.log("req.user", req.user)
+        aggregate_options.push({
+            $match: {
+                isSelected: true
+            },
+        });
+
+
+        const aggregateQuery = banner.aggregate(aggregate_options);
+        const userdetail = await banner.aggregatePaginate(aggregateQuery, options);
+
+        if (req.user.userType == "user") {
+            const allImages = userdetail.docs.flatMap(doc => doc.carImage);
+            return SuccessOk(res, "CarBanner get successfully.", { allImages });
+        }
+        return SuccessOk(res, "CarBanner get successfully.", userdetail)
+
+
+
+
 
     } catch (error) {
         console.log("err", error);
@@ -153,17 +166,17 @@ const deleteCarImage = async (req, res) => {
     }
 };
 
-const getCarImageId = async (req,res) => {
+const getCarImageId = async (req, res) => {
 
-         try {
-                const bannerID = req.params.id;
-                const bannerdata = await banner.findOne({ _id: bannerID });
-                return SuccessOk(res, "Banner find successfully.", bannerdata)
-        
-            } catch (error) {
-                console.log("err", error);
-                return InternalServerError(res, "Internal Server Error", error.message);
-            }
+    try {
+        const bannerID = req.params.id;
+        const bannerdata = await banner.findOne({ _id: bannerID });
+        return SuccessOk(res, "Banner find successfully.", bannerdata)
+
+    } catch (error) {
+        console.log("err", error);
+        return InternalServerError(res, "Internal Server Error", error.message);
+    }
 }
 
-module.exports = { addCarImage, getCarImage,getCarImageId, getCarImageList, updateCarImage, deleteCarImage }
+module.exports = { addCarImage, getCarImage, getCarImageId, getCarImageList, updateCarImage, deleteCarImage }

@@ -1,5 +1,5 @@
 import { BASE_API_URL } from '@/utils/constants';
-import api, { request } from '../api';
+import { request } from '../api';
 
 export const BASE_AUTH_ROUTE = BASE_API_URL + '/api/admin';
 

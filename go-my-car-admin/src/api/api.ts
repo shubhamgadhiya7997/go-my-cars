@@ -1,10 +1,6 @@
-import {
-  ApiErrorToast,
-  showApiErrorToast,
-} from '@/components/toast/errorToast';
 import { BASE_API_URL } from '@/utils/constants';
 import { getToken } from '@/utils/sessionStorage';
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import Toast from '@/components/toast/commonToast';
 
 const api = axios.create({
@@ -49,7 +45,7 @@ export const request = async (
       ...config,
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
 
     let errorMessage = error.message||'An unexpected error occurred';
     if (axios.isAxiosError(error) && error.response) {

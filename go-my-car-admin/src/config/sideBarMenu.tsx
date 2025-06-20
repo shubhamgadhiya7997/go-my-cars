@@ -16,6 +16,9 @@ import {
   Settings,
   BadgeInfo,
   Handshake,
+  BadgePlus,
+  Eye,
+  ShoppingCart,
 } from 'lucide-react';
 
 export const sidebarMenus = {
@@ -36,6 +39,7 @@ export const sidebarMenus = {
       icon: Users,
       title: 'Users',
     },
+    
   ],
   car: [
     {
@@ -43,15 +47,15 @@ export const sidebarMenus = {
       key: 'car',
       name: 'Manage Car',
       path: '/car',
-      icon: Tag,
+      icon: Eye,
     },
     {
       key: 'car-create',
       name: 'Create Car',
       path: '/car/create',
-      icon: Tag,
+      icon: BadgePlus,
     },
-    
+
 
   ],
   banner: [
@@ -60,13 +64,13 @@ export const sidebarMenus = {
       key: 'banner',
       name: 'Manage banner',
       path: '/banner',
-      icon: Gift,
+      icon: Eye,
     },
     {
       key: 'banner-create',
       name: 'Create banner',
       path: '/banner/create',
-      icon: Gift,
+      icon: BadgePlus,
     },
   ],
   bookings: [
@@ -76,6 +80,21 @@ export const sidebarMenus = {
       path: '/booking',
       icon: Newspaper,
       title: 'bookings',
+    },
+  ],
+   coupon: [
+    {
+      title: 'coupon',
+      key: 'coupon',
+      name: 'Manage coupon',
+      path: '/coupon',
+      icon: Gift,
+    },
+    {
+      key: 'coupon-create',
+      name: 'Create coupon',
+      path: '/coupon/create',
+      icon: BadgePlus,
     },
   ],
   settings: [
@@ -117,8 +136,17 @@ export const sidebarMenus = {
       key: 'create-notifications',
       name: 'create Notifications',
       path: '/notifications/create',
-      icon: Bell,
+      icon: BadgePlus,
 
+    },
+  ],
+  favorite: [
+    {
+      key: 'favorite',
+      name: 'favorite',
+      path: '/favorite',
+      icon: ShoppingCart,
+      title: 'favorite',
     },
   ],
 };

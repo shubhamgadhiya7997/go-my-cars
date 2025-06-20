@@ -23,7 +23,7 @@ import {useUpdatePartner, useUpdateSupport, useViewPartner, useViewSupport } fro
 
 
 // Define the form component
-const CreatePartner = () => {
+const UpdatePartner = () => {
   const { id } = useParams();
   console.log("id", id)
   const navigate = useNavigate();
@@ -210,4 +210,4 @@ const CreatePartner = () => {
   );
 };
 
-export default CreatePartner;
+export default UpdatePartner;

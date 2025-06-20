@@ -4,22 +4,22 @@ import { request } from '../api';
 export const BASE_AUTH_ROUTE = BASE_API_URL;
 
 const ROUTES = {
-  COUPONS: `${BASE_AUTH_ROUTE}/api`,
+  BANNERS: `${BASE_AUTH_ROUTE}/api`,
 };
 
-export const createBanner = async data => {
-  return request('post', `${ROUTES.COUPONS}/addcarbanner`, data);
+export const createBanner = async (data: any) => {
+  return request('post', `${ROUTES.BANNERS}/addcarbanner`, data);
 };
 
 export const updateBanner = async ({
   userId,
   isSelected,
 }: {
-  is: string;
-  isSelected: Record<string, any>;
+  userId: string;
+  isSelected: boolean;
 }) => {
   console.log("data", isSelected)
-  return request('put', `${ROUTES.COUPONS}/updatecarbanner` + `/${userId}`, {isSelected});
+  return request('put', `${ROUTES.BANNERS}/updatecarbanner` + `/${userId}`, {isSelected});
 };
 export const updateBannerId = async ({
   id,
@@ -30,21 +30,21 @@ export const updateBannerId = async ({
 }) => {
   console.log("1data", data)
   console.log("1id", id)
-  return request('put', `${ROUTES.COUPONS}/updatecarbanner` + `/${id}`, data);
+  return request('put', `${ROUTES.BANNERS}/updatecarbanner` + `/${id}`, data);
 };
 
-export const deleteBanner = async couponId => {
-  return request('delete', ROUTES.COUPONS + `/deletecarbanner/${couponId}`);
+export const deleteBanner = async (couponId: any) => {
+  return request('delete', ROUTES.BANNERS + `/deletecarbanner/${couponId}`);
 };
 
-export const getBanner = async params => {
-  return request('get', `${ROUTES.COUPONS}/getcarbanner` , null, { params });
+export const getBanner = async (params: any) => {
+  return request('get', `${ROUTES.BANNERS}/getcarbanner` , null, { params });
 };
 
-export const getBannerId = async id => {
-  return request('get', `${ROUTES.COUPONS}/getcarbanner` + `/${id}`);
+export const getBannerId = async (id: any) => {
+  return request('get', `${ROUTES.BANNERS}/getcarbanner` + `/${id}`);
 }
 
 export const getViewBanner = async (couponId: string) => {
-  return request('get', `${ROUTES.COUPONS}/viewcar` + `/${couponId}`);
+  return request('get', `${ROUTES.BANNERS}/viewcar` + `/${couponId}`);
 };

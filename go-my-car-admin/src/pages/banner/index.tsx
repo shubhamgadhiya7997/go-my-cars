@@ -5,11 +5,12 @@ import { ArrowUpDown, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { usedeleteBanner } from '@/hooks/api/banner';
-import { useTableFilters } from '@/hooks/useTableFilters';
+import { Filter, useTableFilters } from '@/hooks/useTableFilters';
 import CopyToClipboard from '@/components/copyToClipBoard';
 import Toast from '@/components/toast/commonToast';
 import { useGetBanner, useUpdateBanner } from '@/hooks/api/banner';
 import AlertDialogComponent from '@/components/alertDialog/alertConfirmDialog';
+import { ColumnDef } from '@tanstack/react-table';
 
 const Banner = () => {
 
@@ -40,7 +41,7 @@ const Banner = () => {
   };
 
 
-  const filters = [];
+  const filters: Filter[] = [];
 
   const {
     search,
@@ -89,19 +90,27 @@ const Banner = () => {
  const { mutate: activeInactive, isSuccess: activateUserSuccess } =
     useUpdateBanner(onSuccessHandler);
 
-
-  const handleActiveUser = (value: number) => {
-    const payload = {
+interface UpdateBannerPayload {
+  userId: string;
+  isSelected: boolean;
+}
+  const handleActiveUser = (value: boolean) => {
+    const payload:UpdateBannerPayload = {
       userId: id,
       isSelected: value,
     };
     activeInactive(payload);
     console.log('Payload:>>', payload);
   };
-  const handlePageChange = page =>
+  const handlePageChange = (page: any) =>
     setPagination(prev => ({ ...prev, page: page }));
 
-  const columns = [
+interface Banner {
+  _id: string;
+  isSelected: boolean;
+}
+
+  const columns: ColumnDef<Banner>[] = [
     {
       accessorKey: '_id',
       header: ({ column }) => (
@@ -125,7 +134,7 @@ const Banner = () => {
 
     {
       accessorKey: 'isSelected',
-      header: 'isSelected',
+      header: 'Status',
       cell: ({ row }) => <div>
         {row.getValue('isSelected') === true ? (
           <span className='bg-green-100 text-green-800 px-2 py-1 rounded'>
@@ -137,7 +146,7 @@ const Banner = () => {
           </span>
         )}
       </div>,
-      visible: false, // Hidden by default
+    
     },
 
 

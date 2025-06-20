@@ -6,6 +6,14 @@ const settingModal = new mongoose.Schema({
     },
     privacyPolicy: {
         type: String
+    },
+    protectionFees:{
+        type: Number,
+        default:0
+    },
+    convenienceFees:{
+        type: Number,
+        default:0
     }
 }, {timestamps: true});
 

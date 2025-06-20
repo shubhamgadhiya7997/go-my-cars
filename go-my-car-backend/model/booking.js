@@ -12,7 +12,8 @@ const bookingModal = new mongoose.Schema({
     },
     status: {
         type: String,
-        default: "Pending"
+          enum: ['Confirmed', 'Cancelled', 'Ongoing', 'Completed'],
+        default: "Confirmed"
     },
     startDate: {
         type: Date
@@ -20,6 +21,9 @@ const bookingModal = new mongoose.Schema({
     endDate: {
         type: Date
     },
+    couponCode: {
+        type: String
+    }
 
 
 },

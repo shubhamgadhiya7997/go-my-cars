@@ -11,6 +11,9 @@ const booking  = require("./routes/Api/booking");
 const support = require("./routes/Api/support");
 const partner = require("./routes/Api/partner");
 const setting = require("./routes/Api/setting");
+const coupon = require("./routes/Api/coupon");
+const review = require("./routes/Api/review");
+const favorite = require("./routes/Api/favorite");
 const admin = require("./routes/Api/admin");
 const cron = require("node-cron");
 const { carBooking } = require("./routes/controller/booking");
@@ -39,6 +42,7 @@ cron.schedule("0 0 * * *", function() {
     carBooking()
 });
 // sendnotificationCheck()
+console.log("process.env.PORT", process.env.PORT)
 const port = process.env.PORT || 3000
 
 app.get("/", (req,res) => {
@@ -52,6 +56,9 @@ app.use("/api",booking);
 app.use("/api",support);
 app.use("/api",partner);
 app.use("/api",setting);
+app.use("/api",coupon);
+app.use("/api",review);
+app.use("/api",favorite);
 app.use("/api/admin",admin);
 
 // const redisHost = process.env.REDIS_HOST || 'localhost';

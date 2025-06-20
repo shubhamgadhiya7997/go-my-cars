@@ -7,15 +7,31 @@ const getPartner = async (req, res) => {
     try {
            const { aggregate_options, options } = getDataByPaginate(req, '');
          
-            if (req.query.search) {
-               aggregate_options.push({
-                   $match: {
-                       $or: [
-                           { email: { $regex: req.query.search, $options: 'i' } },
-                       ],
-                   },
-               });
-           }
+          
+    if (req.query.fullName) {
+      aggregate_options.push({
+        $match: {
+          fullName: { $regex: req.query.fullName, $options: 'i' },
+        },
+      });
+    }
+
+    if (req.query.email) {
+      aggregate_options.push({
+        $match: {
+          email: { $regex: req.query.email, $options: 'i' },
+        },
+      });
+    }
+
+    if (req.query.status === "true" || req.query.status === "false") {
+      aggregate_options.push({
+        $match: {
+          reply: { $exists: req.query.status === "true" },
+        },
+      });
+    }
+
            const aggregateQuery = partner.aggregate(aggregate_options);
            const userdetail = await partner.aggregatePaginate(aggregateQuery, options);
            return SuccessOk(res, "partner get successfully.", userdetail)

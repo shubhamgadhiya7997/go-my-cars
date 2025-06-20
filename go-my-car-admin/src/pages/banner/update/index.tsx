@@ -35,7 +35,7 @@ const updateCouponValidationSchema = z
   .strict();
 
 // Define the update banner component
-const UpdateCoupon = () => {
+const UpdateBanner = () => {
   const { id } = useParams();
   console.log("id", id)
   const navigate = useNavigate();
@@ -51,15 +51,16 @@ const UpdateCoupon = () => {
 
  
   // Update banner mutation
-  const onSuccessUpdateCoupon = data => {
+  const onSuccessUpdateCoupon = (data: any) => {
     Toast('success', data?.message || 'banner Updated Successfully');
     navigate('/banner');
   };
   const { mutate: updateBanner, isPending: isUpdateCouponPending } =
     useUpdateBannerId(onSuccessUpdateCoupon);
 
+type UpdateBannerSchema = z.infer<typeof updateCouponValidationSchema>;
 
-  const form = useForm({
+  const form = useForm<UpdateBannerSchema>({
     resolver: zodResolver(updateCouponValidationSchema),
     defaultValues: {
       isSelected: false,
@@ -68,7 +69,7 @@ const UpdateCoupon = () => {
     },
   });
   const { control, register } = form;
-  const [imagePreviews, setImagePreviews] = useState({});
+  const [imagePreviews, setImagePreviews] : any = useState({});
 
   
   const {
@@ -86,8 +87,8 @@ const UpdateCoupon = () => {
     const bannerData = bannerDataResponse?.data;
     if (bannerData) {
       setBannerData(bannerData);
-      const previews = {};
-      bannerData.carImage?.forEach((img, index) => {
+      const previews: any = {};
+      bannerData.carImage?.forEach((img : any, index: any) => {
         previews[index] = typeof img === 'string' ? `${BASE_API_URL}/static/${img}` : URL.createObjectURL(img); // adjust path if needed
       });
 
@@ -103,7 +104,7 @@ const UpdateCoupon = () => {
   const [removedImages, setRemovedImages] = useState([]);
 
   // Form submission handler
-  function onSubmit(data) {
+  function onSubmit(data: any) {
     console.log("data", data)
     const formData = new FormData();
 
@@ -114,7 +115,7 @@ const UpdateCoupon = () => {
 
     // Append images
     if (data.images) {
-      data.images.forEach((fileWrapper, idx) => {
+      data.images.forEach((fileWrapper: any, idx: any) => {
         const file = fileWrapper instanceof FileList ? fileWrapper[0] : fileWrapper;
         if (file instanceof File) {
           formData.append('images', file); // Backend should expect 'images' as an array
@@ -199,7 +200,7 @@ const UpdateCoupon = () => {
                         const file = e.target.files?.[0];
                         if (file) {
                           const previewUrl = URL.createObjectURL(file);
-                          setImagePreviews((prev) => ({ ...prev, [index]: previewUrl }));
+                          setImagePreviews((prev:any) => ({ ...prev, [index]: previewUrl }));
                         }
                       }}
                     />
@@ -230,7 +231,7 @@ const UpdateCoupon = () => {
                         removeImage(index);
 
                         // Remove preview
-                        setImagePreviews(prev => {
+                        setImagePreviews((prev: any) => {
                           const updated = { ...prev };
                           delete updated[index];
                           return updated;
@@ -270,4 +271,4 @@ const UpdateCoupon = () => {
   );
 };
 
-export default UpdateCoupon;
+export default UpdateBanner;

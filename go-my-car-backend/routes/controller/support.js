@@ -3,28 +3,44 @@ const support = require("../../model/support");
 const { SuccessCreated, InternalServerError, SuccessOk } = require("../../Response/response");
 const Mail = require("../../mailer/mail");
 const getSupport = async (req, res) => {
-    try {
-        const { aggregate_options, options } = getDataByPaginate(req, '');
+  try {
+    const { aggregate_options, options } = getDataByPaginate(req, '');
 
-        if (req.query.search) {
-            aggregate_options.push({
-                $match: {
-                    $or: [
-                        { email: { $regex: req.query.search, $options: 'i' } },
-                    ],
-                },
-            });
-        }
-        const aggregateQuery = support.aggregate(aggregate_options);
-        const userdetail = await support.aggregatePaginate(aggregateQuery, options);
-        return SuccessOk(res, "support get successfully.", userdetail)
-
-    } catch (error) {
-        console.log("err", error);
-        return InternalServerError(res, "Internal Server Error", error.message)
+    if (req.query.fullName) {
+      aggregate_options.push({
+        $match: {
+          fullName: { $regex: req.query.fullName, $options: 'i' },
+        },
+      });
     }
 
-}
+    if (req.query.email) {
+      aggregate_options.push({
+        $match: {
+          email: { $regex: req.query.email, $options: 'i' },
+        },
+      });
+    }
+
+    if (req.query.status === "true" || req.query.status === "false") {
+      aggregate_options.push({
+        $match: {
+          reply: { $exists: req.query.status === "true" },
+        },
+      });
+    }
+
+    const aggregateQuery = support.aggregate(aggregate_options);
+    const userdetail = await support.aggregatePaginate(aggregateQuery, options);
+    return SuccessOk(res, "Support fetched successfully.", userdetail);
+
+  } catch (error) {
+    console.log("err", error);
+    return InternalServerError(res, "Internal Server Error", error.message);
+  }
+};
+
+
 
 const postSupport = async (req, res) => {
     try {
@@ -60,7 +76,7 @@ const updateSupport = async (req, res) => {
             { $set: { reply: reply } },
             { new: true }
         )
-     const sendmail = Mail.replySendMail(email, reply);
+        const sendmail = Mail.replySendMail(email, reply);
 
         return SuccessOk(res, "support updated successfully.", supportData)
 

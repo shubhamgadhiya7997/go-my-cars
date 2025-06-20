@@ -5,12 +5,7 @@ const DASHBOARD_ROUTES = {
   DASHBOARD: BASE_API_URL + '/api/admin/dashboard',
 };
 
-// Get TradeTips
-// export const getDashboard = () => {
-//   return request('get', DASHBOARD_ROUTES.DASHBOARD);
-// };
-
-export const getDashboard = async (data) => {
+export const getDashboard = async (data: any) => {
   console.log(data, 'dataaaaa');
 
   return request('post', DASHBOARD_ROUTES.DASHBOARD, data, {

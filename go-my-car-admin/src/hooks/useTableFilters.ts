@@ -1,6 +1,15 @@
 import { useState, useCallback } from 'react';
 import { debounce } from 'lodash';
 
+export interface Filter {
+  col_key: string;
+  filedType: 'input' | 'select';
+  queryKey: string;
+  placeHolder: string;
+  defaultLabelValue?: string;
+  options?: { label: string; value: string | boolean }[];
+}
+
 /**
  * Custom hook for managing filter state and operations
  * @param {Array} initialFilters - Array of filter configurations
@@ -10,9 +19,9 @@ import { debounce } from 'lodash';
  * @returns {Object} Filter state and handler functions
  */
 export const useTableFilters = (
-  initialFilters = [],
-  initialPagination = { currentPage: 1 },
-  onPaginationChange = () => {},
+  initialFilters: Filter[] = [],
+  initialPagination = { page: 1 },
+  onPaginationChange = (pagination: any) => {},
   debounceTime = 500
 ) => {
   // Initialize search state
@@ -20,11 +29,11 @@ export const useTableFilters = (
   const [searchInput, setSearchInput] = useState('');
   
   // Initialize search query parameters
-  const [searchQueryParams, setSearchQueryParams] = useState({});
+  const [searchQueryParams, setSearchQueryParams] = useState<{ [key: string]: any }>({});
   
   // Initialize selected filter values based on filter types
   const [selectedFilterValues, setSelectedFilterValues] = useState(
-    initialFilters.reduce((acc, filter) => {
+    initialFilters.reduce((acc: { [key: string]: string }, filter) => {
       if (filter.filedType === 'select') {
         acc[filter.col_key] = 'All';
       }
@@ -39,20 +48,20 @@ export const useTableFilters = (
       // Reset to page 1 when search changes
       onPaginationChange({
         ...initialPagination,
-        currentPage: 1,
+        page: 1,
       });
     }, debounceTime),
     [initialPagination, onPaginationChange]
   );
   
   // Handle search input changes
-  const handleSearchChange = useCallback((value) => {
+  const handleSearchChange = useCallback((value: string) => {
     setSearchInput(value);
     debouncedSearch(value);
   }, [debouncedSearch]);
   
   // Handle filter changes
-  const handleFilterChange = useCallback((filteredValues, value) => {
+  const handleFilterChange = useCallback((filteredValues: Filter, value: string) => {
     // Update selected filter values
     setSelectedFilterValues((prev) => ({
       ...prev,
@@ -80,7 +89,7 @@ export const useTableFilters = (
     // Reset to page 1 when filters change
     onPaginationChange({
       ...initialPagination,
-      currentPage: 1,
+      page: 1,
     });
   }, [initialPagination, onPaginationChange]);
   
@@ -90,7 +99,7 @@ export const useTableFilters = (
     setSearchInput('');
     setSearchQueryParams({});
     setSelectedFilterValues(
-      initialFilters.reduce((acc, filter) => {
+      initialFilters.reduce((acc: { [key: string]: string }, filter) => {
         if (filter.filedType === 'select') {
           acc[filter.col_key] = 'All';
         }
@@ -100,7 +109,7 @@ export const useTableFilters = (
     
     onPaginationChange({
       ...initialPagination,
-      currentPage: 1,
+      page: 1,
     });
   }, [initialFilters, initialPagination, onPaginationChange]);
   

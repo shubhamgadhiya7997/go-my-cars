@@ -33,7 +33,7 @@ const createBannerValidationSchema = z
 // Define the form component
 const CreateBanner = () => {
   const navigate = useNavigate();
-  const onSuccessCreateBanner = data => {
+  const onSuccessCreateBanner = (data: any) => {
     Toast('success', data?.message || 'Banner Added Successfully');
     navigate('/banner');
   };
@@ -41,15 +41,18 @@ const CreateBanner = () => {
     useCreateBanner(onSuccessCreateBanner);
 
   // Initialize the form with default values
-  const form = useForm({
+  type CreateBannerSchema = z.infer<typeof createBannerValidationSchema>;
+
+  const form = useForm<CreateBannerSchema>({
     resolver: zodResolver(createBannerValidationSchema),
     defaultValues: {
       isSelected: false,
     },
   });
   const { control, register } = form;
-  const [imagePreviews, setImagePreviews] = useState({});
+  const [imagePreviews, setImagePreviews]: any = useState({});
 
+  
   const {
     fields: imageFields,
     append: appendImage,
@@ -59,7 +62,7 @@ const CreateBanner = () => {
     name: 'images',
   });
 
-  function onSubmit(data) {
+  function onSubmit(data: any) {
     console.log("data", data)
     const formData = new FormData();
 
@@ -67,7 +70,7 @@ const CreateBanner = () => {
    
     // Append images
     if (data.images) {
-      data.images.forEach((fileWrapper, idx) => {
+      data.images.forEach((fileWrapper: any, idx: any) => {
         const file = fileWrapper instanceof FileList ? fileWrapper[0] : fileWrapper;
         if (file instanceof File) {
           formData.append('images', file); // Backend should expect 'images' as an array
@@ -138,7 +141,7 @@ const CreateBanner = () => {
                         const file = e.target.files?.[0];
                         if (file) {
                           const previewUrl = URL.createObjectURL(file);
-                          setImagePreviews((prev) => ({ ...prev, [index]: previewUrl }));
+                          setImagePreviews((prev: any) => ({ ...prev, [index]: previewUrl }));
                         }
                       }}
                     />
@@ -159,7 +162,7 @@ const CreateBanner = () => {
                       variant="ghost"
                       onClick={() => {
                         removeImage(index);
-                        setImagePreviews((prev) => {
+                        setImagePreviews((prev: any) => {
                           const updated = { ...prev };
                           delete updated[index];
                           return updated;

@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createMedia, deleteMediaAssets, getMediaAssetsById } from '@/api/mediaAssets';
-import { createPrivacy, createSetting, getSetting } from '@/api/setting';
+import { createFees, createPrivacy, createSetting, getSetting } from '@/api/setting';
 
 const MEDIA_QUERY_KEY = ['media'];
 
@@ -26,6 +26,16 @@ export const useCreateSetting = onSuccessHandler => {
 export const useCreatePrivacy = onSuccessHandler => {
   return useMutation({
     mutationFn: createPrivacy,
+    retry: false,
+    onSuccess: data => {
+      onSuccessHandler(data);
+    },
+  });
+};
+
+export const useCreateFees = onSuccessHandler => {
+  return useMutation({
+    mutationFn: createFees,
     retry: false,
     onSuccess: data => {
       onSuccessHandler(data);

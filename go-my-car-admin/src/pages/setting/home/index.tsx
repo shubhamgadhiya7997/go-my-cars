@@ -9,7 +9,24 @@ import {
 import { Button } from "@/components/ui/button";
 
 import Toast from "@/components/toast/commonToast";
-import { useCreatePrivacy, useCreateSetting, useSetting } from "@/hooks/api/setting";
+import { useCreateFees, useCreatePrivacy, useCreateSetting, useSetting } from "@/hooks/api/setting";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from 'zod';
+import { onFormErrors } from '@/utils/helper';
+import { useCreateCar } from "@/hooks/api/cars";
+import { useNavigate } from "react-router-dom";
 
 function MediaAssetsHome() {
   const onSuccessHandler = (data: { message: string }) => {
@@ -110,6 +127,40 @@ function MediaAssetsHome() {
 
     privacy(formData);
   };
+  const ValidationSchema = z
+    .object({
+             convenienceFees: z.number({ required_error: 'convenience fees is required', }).min(1, 'convenience fees is required').positive('convenience fees is required'),
+             protectionFees: z.number({ required_error: 'protection fees is required', }).min(1, 'protection fees is required').positive('protection fees is required'),
+       
+    })
+      .strict();
+const form = useForm({
+    resolver: zodResolver(ValidationSchema),
+    defaultValues: {
+      convenienceFees: undefined,
+      protectionFees: undefined
+    }
+  })
+ const { control, register } = form;
+
+function onSubmit(data) {
+    console.log("123data", data)
+    createFees(data)
+}
+  const navigate = useNavigate();
+  const onSuccess = data => {
+    Toast('success', data?.message || 'Fees Added Successfully');
+    navigate('/setting');
+  };
+
+  useEffect(() => {
+     form.reset({
+convenienceFees: data?.data?.convenienceFees,
+      protectionFees: data?.data?.protectionFees
+     })
+  }, [data, form.reset])
+  const { mutate: createFees, } =
+    useCreateFees(onSuccess);
 
 
   return (
@@ -252,6 +303,78 @@ function MediaAssetsHome() {
 
           </div>
         </CardContent>
+      </Card>
+
+        <Card>
+        <CardHeader>
+          <CardTitle>Fees Structure</CardTitle>
+          
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+           <form
+                    onSubmit={form.handleSubmit(onSubmit, onFormErrors)}
+                    className="space-y-8 w-full max-w-5xl"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <FormField
+                       control={form.control}
+                       name="convenienceFees"
+                       render={({ field }) => (
+                         <FormItem>
+                           <FormLabel>Convenience Fees</FormLabel>
+                           <FormControl>
+                             <Input
+                             type="number"
+                               placeholder="Enter convenience fees"
+                               {...field}
+                                onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === '' ? undefined : Number(value));
+                      }}
+         
+                             />
+                           </FormControl>
+                        
+                           <FormMessage />
+                         </FormItem>
+                       )}
+                     />
+                      <FormField
+                       control={form.control}
+                       name="protectionFees"
+                       render={({ field }) => (
+                         <FormItem>
+                           <FormLabel>Protection Fees</FormLabel>
+                           <FormControl>
+                             <Input
+                             type="number"
+                               placeholder="Enter protection fees"
+                               {...field}
+                                onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === '' ? undefined : Number(value));
+                      }}
+         
+                             />
+                           </FormControl>
+                          
+                           <FormMessage />
+                         </FormItem>
+                       )}
+                     />
+                     </div>
+                       <div className="flex justify-end space-x-4 ">
+                   
+                    <Button type="submit">
+                       Submit
+                    </Button>
+                  </div>
+</form>
+       </Form>
+        </CardContent>
+       
       </Card>
     </>
   );

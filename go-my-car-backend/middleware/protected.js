@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
-const { Unauthorized, Forbidden } = require('../Response/response');
+const { Unauthorized, Forbidden, BadRequest } = require('../Response/response');
+const user = require('../model/user');
 
-const protected = (req, res, next) => {
+const protected = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
 
   if (!authHeader) {
@@ -13,16 +14,30 @@ const protected = (req, res, next) => {
   if (!token) {
     return Forbidden(res, 'Invalid token.');
   }
-
-  jwt.verify(token, process.env.secretKey, (err, decoded) => {
-    if (err) {
-      console.error('JWT verification error:', err);
-      return Unauthorized(res, 'Unauthorized');
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.secretKey);
+  } catch (err) {
+    console.error('JWT verification error:', err);
+    return Unauthorized(res, 'Unauthorized');
+  } 
+  console.log("decoded", decoded)
+  // console.log("decoded", decoded.payload)
+  if (decoded.payload && decoded.payload.userType == "user") {
+    const userdata = await user.findOne({ _id: decoded.payload._id })
+    if(!userdata){
+      return NotFound(res, "User not found")
     }
+     if (userdata.isActive === false) {
+      return BadRequest(res, 'User is not activate. Please contact admin.');
+    }
+     if (userdata.isDeleted === true) {
+      return BadRequest(res, 'User not found.');
+    }
+  }
+  req.user = decoded.payload;
+  next();
 
-    req.user = decoded.userDetails;
-    next();
-  });
 };
 
 module.exports = protected;

@@ -5,11 +5,20 @@ import { Input } from '@/components/ui/input';
 
 import { ArrowUpDown, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useTableFilters } from '@/hooks/useTableFilters';
+import { Filter, useTableFilters } from '@/hooks/useTableFilters';
 import CopyToClipboard from '@/components/copyToClipBoard';
 import { useGetSupport } from '@/hooks/api/support';
 import { Link } from 'react-router-dom';
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import dayjs from 'dayjs';
+import { exportToExcel } from '@/lib/utils';
 const Supports = () => {
 
   const [data, setData] = useState([]);
@@ -21,14 +30,42 @@ const Supports = () => {
   });
  
 
-  const filters = [];
+ 
+  const filters: Filter[] = [
+    {
+      col_key: 'fullName',
+      filedType: 'input',
+      queryKey: 'fullName',
+      placeHolder: 'Search support by full name',
+    },
+    {
+      col_key: 'email',
+      filedType: 'input',
+      queryKey: 'email',
+      placeHolder: 'Search support by email',
+    },
+   
+    {
+      col_key: 'status',
+      queryKey: 'status',
+      filedType: 'select',
+      placeHolder: 'All Pending/Completed',
+      defaultLabelValue: 'All Pending/Completed  ', // optional fallback label
+      options: [
+        { label: 'Pending', value: 'false' },
+        { label: 'Completed', value: 'true' },
+      ],
+    },
+  ];
 
   const {
     search,
     searchInput,
     searchQueryParams,
+    selectedFilterValues,
     handleSearchChange,
     handleFilterChange,
+    resetFilters,
   } = useTableFilters(filters, pagination, setPagination);
 
   const {
@@ -65,10 +102,10 @@ const Supports = () => {
     searchQueryParams,
   ]);
 
-  const handlePageChange = page =>
+  const handlePageChange = (page: number) =>
     setPagination(prev => ({ ...prev, page: page }));
 
-  const columns = [
+  const columns: any[] = [
     {
       accessorKey: '_id',
       header: ({ column }) => (
@@ -106,7 +143,7 @@ const Supports = () => {
     },
     {
       accessorKey: 'comment',
-      header: 'comment',
+      header: 'Query',
       cell: ({ row }) => <div>{row.getValue('comment')}</div>,
       visible: false, // Hidden by default
     },
@@ -138,23 +175,76 @@ const Supports = () => {
   
   ];
 
+  const header = ['Full Name', 'Email', 'Query', 'Status','Reply', 'Created At', 'Updated At'];
+  const rowdata = data.map(item => ({
+    'Full Name': item.fullName,
+    'Email': item.email,
+    'Query': item.comment,
+    'Status': item.reply ? 'Completed' : 'Pending',
+    'Reply': item.reply ? item.reply : "-",
+    'Created At': item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '',
+    'Updated At': item.updatedAt ? dayjs(item.updatedAt).format('DD MMM YYYY, hh:mm A') : '',
+  }));
+  const filename = `${new Date()}-support.xlsx`
+
+
   return (
     <div>
       <PageTitle title="Supports" />
       <div className="border rounded-xl p-4 flex flex-col min-h-[700px]">
         <div className="flex justify-between mb-4 gap-2">
-          <div className="grid grid-cols-2 gap-3 flex-1">
-            <Input
+          <div className="grid grid-cols-3 gap-3 flex-1">
+            {/* <Input
               placeholder="Search Supports by email"
               value={searchInput}
               onChange={e => handleSearchChange(e.target.value)}
               className="max-w-sm"
-            />
-
+            /> */}
+  {filters.map((filter) =>
+              filter.filedType === 'select' ? (
+                <>
+                  <Select
+                    key={filter.col_key}
+                    value={selectedFilterValues[filter.col_key]}
+                    onValueChange={(value) => handleFilterChange(filter, value)}
+                  >
+                    <SelectTrigger className='max-w-52'>
+                      <SelectValue placeholder={filter.placeHolder} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='All'>
+                        {filter.defaultLabelValue || 'All'}
+                      </SelectItem>
+                      {filter.options?.map((option) => (
+                        <SelectItem key={String(option.value)} value={String(option.value)}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
+              ) : (
+                <Input
+                  key={filter.col_key}
+                  placeholder={filter.placeHolder}
+                  onChange={(e) => handleFilterChange(filter, e.target.value)}
+                  className='max-w-sm'
+                />
+              )
+            )}
           </div>
 
         
         </div>
+
+        <div>
+                  <Button
+                    onClick={() => exportToExcel(header, rowdata, filename)}
+                    className="text-white mt-2 px-4 py-2 rounded"
+                  >
+                    Export to Excel
+                  </Button>
+                </div>
         {isPending && (
           <div className="h-[600px] flex items-center justify-center">
             <Loader2 className="mr-2 h-10 w-10 animate-spin" />

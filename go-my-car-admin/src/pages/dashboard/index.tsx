@@ -217,12 +217,12 @@ const Dashboard = () => {
                       icon='cars'
                       color='primary'
                     />
-                    <DashBoardCard
+                    {/* <DashBoardCard
                       heading='Available Cars'
                       number={dashboardData?.totalAvailableCar ?? 0}
                       icon='cars'
                       color='success'
-                    />
+                    /> */}
 
 
 

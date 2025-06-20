@@ -1,4 +1,5 @@
 import {
+  cancelBookings,
   getbookings
 } from '@/api/Bookings';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -12,4 +13,13 @@ export const useGetBookings = params => {
   });
 };
 
+export const useCancelBookings = onSuccessHandler => {
+  return useMutation({
+    mutationFn: cancelBookings,
+    retry: false,
+    onSuccess: data => {
+      onSuccessHandler(data);
+    },
+  });
+};
 

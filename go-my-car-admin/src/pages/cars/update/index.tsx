@@ -33,6 +33,31 @@ import {
   useGetViewCars,
   useUpdateCars,
 } from '@/hooks/api/cars';
+import dayjs from 'dayjs';
+
+const sevenYearsAgo = dayjs().subtract(7, 'year');
+const newDate = sevenYearsAgo.format('YYYY-MM-DD')
+console.log("newDate", newDate)
+const dateRangeSchema = z
+  .object({
+    startDate: z.preprocess(
+      (val) => val ? new Date(val as string) : undefined,
+      z.date({ required_error: 'Start Date is required' })
+    ),
+    endDate: z.preprocess(
+      (val) => val ? new Date(val as string) : undefined,
+      z.date({ required_error: 'End Date is required' })
+    ),
+  })
+  .superRefine((data, ctx) => {
+    if (data.startDate && data.endDate && data.endDate <= data.startDate) {
+      ctx.addIssue({
+        path: ['endDate'],
+        code: z.ZodIssueCode.custom,
+        message: 'End date must be after start date',
+      });
+    }
+  });
 
 const updateCarValidationSchema = z
   .object({
@@ -43,35 +68,54 @@ const updateCarValidationSchema = z
       .toUpperCase()
       .trim(),
     carModal: z
-      .number({
-        required_error: 'carModal Value is required',
-      }).min(4, 'carModal min 4 number'),
+         .string({
+           required_error: 'Car registration date is required',
+         })
+           .refine(
+         (date) => date >= newDate,
+         { message: 'Car must be registered within the last 7 years' }
+       ),
     carGear: z
       .string({ required_error: 'carGear is required' }),
     carType: z
       .string({ required_error: 'carType is required' }),
-    carSheet: z
-      .number({
-        required_error: 'carSheet Value is required',
-      }).min(1, 'carSheet cannot be empty'),
-    carPrice: z
-      .number({
-        required_error: 'carPrice Value is required',
-      }).min(1, 'carPrice cannot be empty'),
-    startDate: z
-      .string({ required_error: 'Start Date is required' })
+    carSeat: z
+         .number({
+           required_error: 'Car seat Value is required',
+         }).min(1, 'Car seat must be a positive number')
+         .positive('Car seat must be a positive number'),
+   price: z.object({
+        price1hr: z.number({ required_error: 'Price 1 hr Value is required', }).min(1, 'Price 1 hr must be a positive number').positive('Price 1 hr must be a positive number'),
+        price8hr: z.number({ required_error: 'Price 8 hr Value is required', }).min(1, 'Price 8 hr must be a positive number').positive(' Price 8 hr must be a positive number'),
+        price12hr: z.number({ required_error: 'Price 12 hr Value is required', }).min(1, 'Price 12 hr must be a positive number').positive('Price 12 hr must be a positive number'),
+        fullDay: z.number({ required_error: 'Price full day Value is required', }).min(1, 'Price full day must be a positive number').positive('Price full day must be a positive number'),
+      }),
+    // startDate: z
+    //   .string({ required_error: 'Start Date is required' })
+    //   .transform(date => new Date(date)),
+    // endDate: z
+    //   .string({ required_error: 'End Date is required' })
+    //   .refine(date => !isNaN(Date.parse(date)), {
+    //     message: 'Invalid End Date format',
+    //   })
+    //   .transform(date => new Date(date)),
+      availableDates: z.array(dateRangeSchema).default([]),
+    unavailableDates: z.array(dateRangeSchema).default([]),
+   insuranceExpiry: z
+  .string({ required_error: 'Insurance expiry date is required' })
+  .min(1, 'Insurance expiry date is required'),
 
-      .transform(date => new Date(date)),
-    endDate: z
-      .string({ required_error: 'End Date is required' })
-      .refine(date => !isNaN(Date.parse(date)), {
-        message: 'Invalid End Date format',
-      })
-      .transform(date => new Date(date)),
+           carColor: z
+          .string({
+            required_error: 'Car color Value is required',
+          }).min(1, 'Car color is required'),
     fastag: z.boolean().default(false), // ✅ ADDED
     isAvailable: z.boolean().default(true), // ✅ ADDED
     location: z.string().min(1, 'Location is required'), // ✅ ADDED
     hostName: z.string().min(1, 'Host name is required'), // ✅ ADDED
+     chassicNo: z.string().min(1, 'Chassic no is required'), // ✅ ADDED
+       engineNo: z.string().min(1, 'Engine no is required'), // ✅ ADDED
+       NumberPlate: z.string().min(1, 'Number plate is required'), // ✅ ADDED
     isActive: z.boolean().optional(), // ✅ ADDED
     feature: z
       .array(z.string().min(1, 'Each feature must not be empty'))
@@ -107,17 +151,22 @@ const UpdateCars = () => {
       carModal: undefined,
       carGear: '',
       carType: '',
-      carSheet: undefined,
-      carPrice: undefined,
+      carSeat: undefined,
+      price: undefined,
       fastag: false,
       isAvailable: false,
-      startDate: '',
-      endDate: '',
+       insuranceExpiry: undefined,
+      carColor: '',
+     availableDates: [],
+    unavailableDates: [],
       location: '',
       hostName: '',
       isActive: true,
       feature: [],
       images: [],
+       chassicNo : '',
+      engineNo : '',
+      NumberPlate : ''
     });
 
     setImagePreviews({});
@@ -130,18 +179,23 @@ const UpdateCars = () => {
       carModal: undefined,
       carGear: undefined,
       carType: undefined,
-      carSheet: undefined,
-      carPrice: undefined,
+      carSeat: undefined,
+      price: undefined,
       fastag: false,
       isAvailable: false,
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: '',
+       availableDates: [],
+    unavailableDates: [],
+           insuranceExpiry: undefined,
+      carColor: '',
       location: '',
       hostName: '',
       isActive: true,
       feature: [],
       images: [],
       carImage: [],
+       chassicNo : '',
+      engineNo : '',
+      NumberPlate : ''
     },
   });
   const { control, register } = form;
@@ -159,6 +213,18 @@ const UpdateCars = () => {
     control,
     name: 'images',
   });
+const { fields: availableDateFields, append: appendAvailableDate, remove: removeAvailableDate } = useFieldArray({
+  control: form.control,
+  name: 'availableDates'
+});
+const {
+  fields: unavailableDateFields,
+  append: appendUnavailableDate,
+  remove: removeUnavailableDate
+} = useFieldArray({
+  control: form.control,
+  name: 'unavailableDates'
+});
 
   const [carData, setCarData] = useState({});
 
@@ -177,20 +243,31 @@ const UpdateCars = () => {
 
       form.reset({
         carName: carData.carName || '',
-        carModal: carData.carModal || '',
+        carModal: carData.carModal
+          ? new Date(carData.carModal).toISOString().split('T')[0]
+          : '',
         carGear: carData.carGear || '',
         carType: carData.carType || '',
-        carSheet: Number(carData.carSheet) || '',
-        carPrice: carData.carPrice || '',
+        carSeat: Number(carData.carSeat) || '',
+        price: carData.price || '',
         fastag: carData.fastag,
         isAvailable: carData.isAvailable,
         hostName: carData.hostName || '',
-        startDate: carData.startDate
-          ? new Date(carData.startDate).toISOString().split('T')[0]
+        chassicNo: carData.chassicNo || '',
+        engineNo: carData.engineNo || '',
+        NumberPlate: carData.NumberPlate || '',
+        insuranceExpiry: carData.insuranceExpiry
+          ? new Date(carData.insuranceExpiry).toISOString().split('T')[0]
           : '',
-        endDate: carData.endDate
-          ? new Date(carData.endDate).toISOString().split('T')[0]
-          : '',
+            carColor: carData.carColor || '',
+        // startDate: carData.startDate
+        //   ? new Date(carData.startDate).toISOString().split('T')[0]
+        //   : '',
+        // endDate: carData.endDate
+        //   ? new Date(carData.endDate).toISOString().split('T')[0]
+        //   : '',
+        availableDates:carData.availableDates || [],
+        unavailableDates:carData.unavailableDates || [],
         location: carData.location || '',
         feature: carData.feature || [],
         images: carData.carImage || [],
@@ -198,6 +275,7 @@ const UpdateCars = () => {
       });
     }
   }, [carDataResponse, form.reset]);
+  console.log("carData", carData)
   const [removedImages, setRemovedImages] = useState([]);
 
   // Form submission handler
@@ -206,17 +284,28 @@ const UpdateCars = () => {
     const formData = new FormData();
 
     formData.append('carName', data.carName);
-    formData.append('carModal', data.carModal);
+    formData.append('carModal', new Date(data.carModal).toISOString());
+    formData.append('insuranceExpiry', new Date(data.insuranceExpiry).toISOString());
+    formData.append('carColor', data.carColor);
     formData.append('carGear', data.carGear);
     formData.append('carType', data.carType);
-    formData.append('carSheet', data.carSheet);
-    formData.append('carPrice', data.carPrice);
+    formData.append('carSeat', data.carSeat);
+    formData.append('price', JSON.stringify(data.price));
     formData.append('fastag', data.fastag);
     formData.append('isAvailable', data.isAvailable);
     formData.append('hostName', data.hostName);
-    formData.append('startDate', new Date(data.startDate).toISOString());
-    formData.append('endDate', new Date(data.endDate).toISOString());
+    // formData.append('startDate', new Date(data.startDate).toISOString());
+    // formData.append('endDate', new Date(data.endDate).toISOString());
+     formData.append('availableDates', JSON.stringify(data.availableDates));
+    if(data.unavailableDates){
+      formData.append('unavailableDates', JSON.stringify(data.unavailableDates));
+    }
+
     formData.append('location', data.location);
+      formData.append('chassicNo', data.chassicNo);
+    formData.append('engineNo', data.engineNo);
+    formData.append('NumberPlate', data.NumberPlate);
+
     formData.append('feature', data.feature);
     if (removedImages.length > 0) {
       formData.append('imageToRemove', removedImages.join(','));
@@ -279,43 +368,21 @@ const UpdateCars = () => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="carModal"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>car Modal</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter Car Modal"
-                      {...field}
-
-                      onChange={e => field.onChange(Number(e.target.value))}
-
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Enter car modal
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+           
             <FormField
               control={form.control}
               name="carGear"
               render={({ field }) => (
 
                 <FormItem>
-                  <FormLabel>carGear</FormLabel>
+                <FormLabel>Car Gear Type</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select Car Gear" />
+                        <SelectValue placeholder="Select car gear type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -327,7 +394,7 @@ const UpdateCars = () => {
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Select car gear
+                     Select car gear type
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -338,14 +405,14 @@ const UpdateCars = () => {
               name="carType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>carType</FormLabel>
+                  <FormLabel>Car Fuel Type</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select Car Type" />
+                        <SelectValue placeholder="Select car fuel type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -357,7 +424,7 @@ const UpdateCars = () => {
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Select car type
+                     Select car fuel type
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -365,41 +432,148 @@ const UpdateCars = () => {
             />
             <FormField
               control={form.control}
-              name="carSheet"
+              name="carSeat"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>car Sheet</FormLabel>
+                  <FormLabel>Car Seat</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="Enter car Sheet"
+                      placeholder="Enter car seat"
                       {...field}
-                      onChange={e => field.onChange(Number(e.target.value))}
+                    onChange={(e) => {
+    const value = e.target.value;
+    field.onChange(value === '' ? undefined : Number(value));
+  }}
                     />
                   </FormControl>
                   <FormDescription>
-                    Enter car sheet
+                    Enter car seat
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
+             <FormField
               control={form.control}
-              name="carPrice"
+              name="carModal"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>car Price (hr)</FormLabel>
-                  <FormControl>
+                  <FormLabel>Car Registration</FormLabel>
+                <FormControl>
                     <Input
-                      type="number"
-                      placeholder="Enter car Price"
-                      {...field}
-                      onChange={e => field.onChange(Number(e.target.value))}
+                      type="date" {...field}
                     />
                   </FormControl>
                   <FormDescription>
-                    Enter car price
+                   Enter car registration date
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+           <FormField
+              control={form.control}
+              name="price.price1hr"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Price (1 hr to 8 hr)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter price for 1 hour"
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === '' ? undefined : Number(value));
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="price.price8hr"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Price (8 hr to 12 hr)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter price for 8 hours"
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === '' ? undefined : Number(value));
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="price.price12hr"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Price (12 hr to 24 hr)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter price for 12 hours"
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === '' ? undefined : Number(value));
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="price.fullDay"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Price (Full Day)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter price for full day"
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === '' ? undefined : Number(value));
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+                <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter location"
+                      {...field}
+
+                    />
+                  </FormControl>
+                  <FormDescription>
+                  Enter car location
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -411,7 +585,7 @@ const UpdateCars = () => {
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">fastag</FormLabel>
+                    <FormLabel className="text-base">Fastag</FormLabel>
                     <FormDescription>
                       Toggle to activate or deactivate the fastag
                     </FormDescription>
@@ -431,7 +605,7 @@ const UpdateCars = () => {
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">isAvailable</FormLabel>
+                    <FormLabel className="text-base">Available</FormLabel>
                     <FormDescription>
                       Toggle to activate or deactivate the car
                     </FormDescription>
@@ -445,76 +619,280 @@ const UpdateCars = () => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="startDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Start Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* End Date */}
-            <FormField
-              control={form.control}
-              name="endDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>End Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>location</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter location"
-                      {...field}
-
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Choose car location
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+           <div>
+             <div className="flex items-center justify-between mb-4">
+               <label className="block">Available Dates</label>
+               <Button
+                 type="button"
+                 variant="secondary"
+                 onClick={() =>
+                   appendAvailableDate({ startDate: '', endDate: '' })
+                 }
+                 className="flex items-center gap-2"
+               >
+                 <Plus className="h-4 w-4" />
+                 Add Available Date
+               </Button>
+             </div>
+           
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               {availableDateFields.map((field, index) => (
+                 <div key={field.id} className="border p-4 rounded-md space-y-2">
+                   {/* Start Date */}
+                   <FormField
+                     control={form.control}
+                     name={`availableDates.${index}.startDate`}
+                     render={({ field }) => (
+                       <FormItem>
+                         <FormLabel>Start Date</FormLabel>
+                         <FormControl>
+                           <Input
+                             type="datetime-local"
+                             value={field.value ? dayjs(field.value).format("YYYY-MM-DDTHH:mm") : ''}
+                             onChange={(e) => {
+                               const value = e.target.value;
+                               field.onChange(value ? new Date(value) : '');
+                             }}
+                           />
+                         </FormControl>
+                         <FormMessage />
+                       </FormItem>
+                     )}
+                   />
+           
+                   {/* End Date */}
+                   <FormField
+                     control={form.control}
+                     name={`availableDates.${index}.endDate`}
+                     render={({ field }) => (
+                       <FormItem>
+                         <FormLabel>End Date</FormLabel>
+                         <FormControl>
+                           <Input
+                             type="datetime-local"
+                             value={field.value ? dayjs(field.value).format("YYYY-MM-DDTHH:mm") : ''}
+                             onChange={(e) => {
+                               const value = e.target.value;
+                               field.onChange(value ? new Date(value) : '');
+                             }}
+                           />
+                         </FormControl>
+                         <FormMessage />
+                       </FormItem>
+                     )}
+                   />
+           
+                   {/* Remove Button */}
+                   <Button
+                     type="button"
+                     variant="ghost"
+                     onClick={() => removeAvailableDate(index)}
+                     className="text-red-500 mt-2"
+                   >
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                 </div>
+               ))}
+             </div>
+           </div>
+           
+                   <div>
+             <div className="flex items-center justify-between mb-4">
+               <label className="block">Unavailable Dates</label>
+               <Button
+                 type="button"
+                 variant="secondary"
+                 onClick={() =>
+                   appendUnavailableDate({ startDate: '', endDate: '' })
+                 }
+                 className="flex items-center gap-2"
+               >
+                 <Plus className="h-4 w-4" />
+                 Add Unavailable Date
+               </Button>
+             </div>
+           
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               {unavailableDateFields.map((field, index) => (
+                 <div key={field.id} className="border p-4 rounded-md space-y-2">
+                   {/* Start Date */}
+                   <FormField
+                     control={form.control}
+                     name={`unavailableDates.${index}.startDate`}
+                     render={({ field }) => (
+                       <FormItem>
+                         <FormLabel>Start Date</FormLabel>
+                         <FormControl>
+                           <Input
+                             type="datetime-local"
+                             value={field.value ? dayjs(field.value).format("YYYY-MM-DDTHH:mm") : ''}
+                             onChange={(e) => {
+                               const value = e.target.value;
+                               field.onChange(value ? new Date(value) : '');
+                             }}
+                           />
+                         </FormControl>
+                         <FormMessage />
+                       </FormItem>
+                     )}
+                   />
+           
+                   {/* End Date */}
+                   <FormField
+                     control={form.control}
+                     name={`unavailableDates.${index}.endDate`}
+                     render={({ field }) => (
+                       <FormItem>
+                         <FormLabel>End Date</FormLabel>
+                         <FormControl>
+                           <Input
+                             type="datetime-local"
+                             value={field.value ? dayjs(field.value).format("YYYY-MM-DDTHH:mm") : ''}
+                             onChange={(e) => {
+                               const value = e.target.value;
+                               field.onChange(value ? new Date(value) : '');
+                             }}
+                           />
+                         </FormControl>
+                         <FormMessage />
+                       </FormItem>
+                     )}
+                   />
+           
+                   {/* Remove Button */}
+                   <Button
+                     type="button"
+                     variant="ghost"
+                     onClick={() => removeUnavailableDate(index)}
+                     className="text-red-500 mt-2"
+                   >
+                     <Trash2 className="h-4 w-4" />
+                   </Button>
+                 </div>
+               ))}
+             </div>
+           </div>
+        
             <FormField
               control={form.control}
               name="hostName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>hostName</FormLabel>
+                  <FormLabel>Host Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter hostName"
+                      placeholder="Enter host name"
                       {...field}
 
                     />
                   </FormControl>
                   <FormDescription>
-                    Choose hostName
+                   Enter host name
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+<FormField
+              control={form.control}
+              name="chassicNo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Chassic No</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter chassic number"
+                      {...field}
+
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Enter chassic number
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+              <FormField
+              control={form.control}
+              name="engineNo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Engine No</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter engine number"
+                      {...field}
+
+                    />
+                  </FormControl>
+                  <FormDescription>
+                  Enter engine number
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+              <FormField
+              control={form.control}
+              name="NumberPlate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Car Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="GJ01AA999"
+                      {...field}
+
+                    />
+                  </FormControl>
+                  <FormDescription>
+                   Enter car number
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+               <FormField
+              control={form.control}
+              name="insuranceExpiry"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Car insurance expiry date</FormLabel>
+                <FormControl>
+                    <Input
+                      type="date" {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                   Enter car insurance expiry date
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="carColor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Car Color</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter car color"
+                      {...field}
+
+                    />
+                  </FormControl>
+                  <FormDescription>
+                  Enter car color
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div>
               <div className="flex items-center justify-between mb-4">
                 <label className="block">feature</label>

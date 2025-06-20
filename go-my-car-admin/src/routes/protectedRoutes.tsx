@@ -1,3 +1,4 @@
+import Favorite from '@/pages/favorite';
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 
@@ -18,38 +19,10 @@ const Partner = lazy(() => import('@/pages/partner'));
 const PartnerView = lazy(() => import('@/pages/partner/update'));
 const Notifications = lazy(() => import('@/pages/notifications'));
 const CreateNotification = lazy(() => import('@/pages/notifications/create'));
+const Coupon = lazy(() => import("@/pages/coupon"));
+const CouponCreate = lazy(() => import("@/pages/coupon/create/index"));
+const CouponUpdate = lazy(() => import("@/pages/coupon/update"));
 
-
-// const ProtectedRoutes: RouteObject[] = [
-//   { path: '/', element: <DashBoard /> },
-//   { path: '/completed-jobs', element: <Jobs /> },
-//   { path: '/jobs', element: <Jobs /> },
-//   { path: '/jobs/empty', element: <EmptyJobs /> },
-//   { path: '/jobs/completed', element: <CompletedJobs /> },
-//   { path: '/jobs/search', element: <SearchJobs /> },
-//   { path: '/cabhistory', element: <CabHistory /> },
-//   { path: '/spareparts', element: <SpareParts /> },
-//   { path: '/inventory/used', element: <UsedSpareParts /> },
-//   { path: '/inventory/new', element: <NewSpareParts /> },
-//   { path: '/inventory/return', element: <SparePartsReturn /> },
-//   { path: '/inventory/purchase', element: <SparePartsPurchase /> },
-//   { path: '/inventory/purchase-return', element: <PurchaseReturn /> },
-//   { path: '/memo', element: <Memo /> },
-//   { path: '/cars', element: <Cars /> },
-//   { path: '/accounts', element: <Accounts /> },
-//   { path: '/accounts/statements', element: <AccountStatements /> },
-//   { path: '/accounts/ledger', element: <GeneralLedger /> },
-//   { path: '/accounts/supplier-payment', element: <SupplierPayment /> },
-//   { path: '/accounts/invoices', element: <PostingInvoices /> },
-//   { path: '/accounts/expenses', element: <UserExpenses /> },
-//   { path: '/hrms/employee', element: <AddEmployee /> },
-//   { path: '/hrms/payroll', element: <GeneralPayroll /> },
-//   { path: '/hrms/announcements', element: <Announcements /> },
-//   { path: '/hrms/holidays', element: <Holidays /> },
-//   { path: '/customers', element: <Customers /> },
-//   { path: '/reports', element: <Reports /> },
-//   { path: '/settings', element: <Settings /> },
-// ];
 const ProtectedRoutes: RouteObject[] = [
   { path: '/', element: <DashBoard /> },
   { path: '/users', element: <Users /> },
@@ -73,6 +46,11 @@ const ProtectedRoutes: RouteObject[] = [
     path: '/notifications/create',
     element: <CreateNotification />,
   },
+
+   { path: '/coupon', element: <Coupon /> },
+   { path: '/coupon/create', element: <CouponCreate />, },
+   { path: '/coupon/view/:id', element: <CouponUpdate /> },
+   { path: '/favorite', element: <Favorite /> },
 ];
 
 export default ProtectedRoutes;

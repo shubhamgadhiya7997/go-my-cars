@@ -38,6 +38,10 @@ const userModel = new mongoose.Schema({
         type: String,
         required: false
     },
+    isDeleted:{
+        type: Boolean,
+        default: false
+    },
 
 },{timestamps: true});
 userModel.plugin(aggregatePaginate);

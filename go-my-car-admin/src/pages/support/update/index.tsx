@@ -23,7 +23,7 @@ import {useUpdateSupport, useViewSupport } from '@/hooks/api/support';
 
 
 // Define the form component
-const CreateBanner = () => {
+const CreateSupports = () => {
   const { id } = useParams();
   console.log("id", id)
   const navigate = useNavigate();
@@ -210,4 +210,4 @@ const CreateBanner = () => {
   );
 };
 
-export default CreateBanner;
+export default CreateSupports;

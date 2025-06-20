@@ -56,10 +56,12 @@ const login = async (req, res) => {
             return BadRequest(res, "Invalid password")
 
         }
+        const payload = { ...adminDetails.toObject(), userType: 'admin' }
+        console.log("payload", payload)
 
         const tokendata = await new Promise((resolve, reject) => {
             jwt.sign(
-                { adminDetails },
+                { payload },
                 process.env.secretKey,
                 { expiresIn: '120h' },
                 (err, token) => {
@@ -69,11 +71,11 @@ const login = async (req, res) => {
                 }
             );
         });
-        const payload = {
+        const payloaddata = {
             adminDetails,
             token: "Bearer " + tokendata,
         }
-        return SuccessOk(res, "Admin login successfully", payload)
+        return SuccessOk(res, "Admin login successfully", payloaddata)
 
 
     } catch (error) {
@@ -88,7 +90,7 @@ const dashboard = async (req, res) => {
 
         const { fromDate, toDate } = req.body || {};
         console.log("req.body", req.body)
-        let filter = {};
+        let filter = { isDeleted: false };
         if (fromDate && toDate) {
             filter.createdAt = {
                 $gte: new Date(fromDate),
@@ -110,30 +112,55 @@ const dashboard = async (req, res) => {
         console.log("inactiveUser", inactiveUser.length);
 
         let carFilter = {};
+        let totalCar
         if (fromDate && toDate) {
-            carFilter.createdAt = {
-                $gte: new Date(fromDate),
-                $lte: new Date(toDate)
-            };
+            totalCar = await car.find({
+                availableDates: {
+                    $elemMatch: {
+                        startDate: { $lte: new Date(fromDate) },
+                        endDate: { $gte: new Date(toDate) },
+                    },
+                },
+            });
+
+
         } else if (fromDate) {
-            carFilter.createdAt = { $gte: new Date(fromDate) };
+             totalCar = await car.find({
+                availableDates: {
+                    $elemMatch: {
+                        startDate: { $lte: new Date(fromDate) },
+                    },
+                },
+            });
         } else if (toDate) {
-            carFilter.createdAt = { $lte: new Date(toDate) };
+  totalCar = await car.find({
+    availableDates: {
+      $elemMatch: {
+        startDate: { $lte: new Date(toDate) },
+        endDate: { $gte: new Date(toDate) },
+      },
+    },
+  });
+
+
+        } else {
+            totalCar = await car.find()
         }
-        const totalCar = await car.find(filter);
 
-        let carAvailableFilter = {};
+        // const totalCar = await car.find(carFilter);
 
-        if (fromDate && toDate) {
-            carAvailableFilter.startDate = { $gte: new Date(fromDate) };
-            carAvailableFilter.endDate = { $lte: new Date(toDate) };
-        } else if (fromDate) {
-            carAvailableFilter.startDate = { $gte: new Date(fromDate) };
-        } else if (toDate) {
-            carAvailableFilter.endDate = { $lte: new Date(toDate) };
-        }
+        // let carAvailableFilter = {};
 
-        const totalAvailableCar = await car.find(carAvailableFilter);
+        // if (fromDate && toDate) {
+        //     carAvailableFilter.startDate = { $gte: new Date(fromDate) };
+        //     carAvailableFilter.endDate = { $lte: new Date(toDate) };
+        // } else if (fromDate) {
+        //     carAvailableFilter.startDate = { $gte: new Date(fromDate) };
+        // } else if (toDate) {
+        //     carAvailableFilter.endDate = { $lte: new Date(toDate) };
+        // }
+
+        // const totalAvailableCar = await car.find(carAvailableFilter);
 
         let bookingfilter = {};
         if (fromDate && toDate) {
@@ -150,13 +177,13 @@ const dashboard = async (req, res) => {
         const totalBooking = await booking.find(bookingfilter);
 
 
-
+        console.log("totalCar.length", totalCar.length)
         const payload = {
             totalUser: totalUser.length,
             activeUser: activeUser.length,
             inactiveUser: inactiveUser.length,
-            totalCar: totalCar.length,
-            totalAvailableCar: totalAvailableCar.length,
+            totalCar: totalCar ? totalCar.length : 0,
+            // totalAvailableCar: totalAvailableCar.length,
             totalBooking: totalBooking.length
         };
 
@@ -198,6 +225,22 @@ const forgetPassword = async (req, res) => {
 const getNotification = async (req, res) => {
     try {
         const { aggregate_options, options } = getDataByPaginate(req, '');
+        console.log("req.query", req.query)
+        if (req.query.title) {
+            aggregate_options.push({
+                $match: {
+                    title: { $regex: req.query.title, $options: 'i' },
+                },
+            });
+        }
+
+        if (req.query.description) {
+            aggregate_options.push({
+                $match: {
+                    description: { $regex: req.query.description, $options: 'i' },
+                },
+            });
+        }
 
         const aggregateQuery = notification.aggregate(aggregate_options);
         const cardetail = await notification.aggregatePaginate(aggregateQuery, options);
@@ -214,7 +257,7 @@ const addNotification = async (req, res) => {
         const notificationdata = new notification({ title, description: body })
         await notificationdata.save();
 
-        
+
         const usersWithTokens = await user.find({
             fcmToken: { $exists: true, $ne: null, $ne: "" }
         });
