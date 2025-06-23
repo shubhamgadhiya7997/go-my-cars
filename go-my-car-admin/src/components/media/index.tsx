@@ -1,7 +1,5 @@
-import ChallengerLogo from '../../assets/challengerlogo.png';
 import GujjuTraderLogo from '../../assets/gomycar.png';
 
-const ChallengerLogoComponent = () => <img src={ChallengerLogo} />;
 const GujjuTraderLogoComponent = ({ onClick }) => (
   <div
     className=" w-auto overflow-hidden flex justify-center items-center gap-2 cursor-pointer"
@@ -11,4 +9,4 @@ const GujjuTraderLogoComponent = ({ onClick }) => (
   </div>
 );
 
-export { ChallengerLogoComponent, GujjuTraderLogoComponent };
+export { GujjuTraderLogoComponent };

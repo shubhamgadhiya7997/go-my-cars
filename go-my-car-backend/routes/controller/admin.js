@@ -273,7 +273,9 @@ const addNotification = async (req, res) => {
 
 const sendnotificationCheck = async (req, res) => {
     try {
-        sendNotification("dz9HGiqwQ5uLUx8mgsaerb:APA91bEb-9ZBHp-OPNbGO77a04E-QX2lEb2ToZ4a_hUwVQyvfnl-GFvEgdm1bjj1zE2uQtEAP8RTXgXaAp67CqKzRNJ7ytbkOgLqsgGjcClkYo3qsHskG9s", 'Test', 'Hello');
+        const notificationdata = req.query.notification;
+        sendNotification(notificationdata);
+        return SuccessOk(res, "Notification sent successfully", notificationdata)
 
     } catch (error) {
         console.log("err", error);

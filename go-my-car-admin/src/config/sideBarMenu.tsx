@@ -39,7 +39,7 @@ export const sidebarMenus = {
       icon: Users,
       title: 'Users',
     },
-    
+
   ],
   car: [
     {
@@ -82,7 +82,7 @@ export const sidebarMenus = {
       title: 'bookings',
     },
   ],
-   coupon: [
+  coupon: [
     {
       title: 'coupon',
       key: 'coupon',
@@ -106,7 +106,7 @@ export const sidebarMenus = {
       title: 'settings',
     },
   ],
-   support: [
+  support: [
     {
       key: 'support',
       name: 'support',
@@ -115,7 +115,7 @@ export const sidebarMenus = {
       title: 'support',
     },
   ],
-   partner: [
+  partner: [
     {
       key: 'partner',
       name: 'partner',
@@ -124,7 +124,7 @@ export const sidebarMenus = {
       title: 'partner',
     },
   ],
-    notifications: [
+  notifications: [
     {
       key: 'notifications-home',
       name: 'Manage Notifications',
@@ -132,7 +132,7 @@ export const sidebarMenus = {
       icon: Bell,
       title: 'Notifications',
     },
-       {
+    {
       key: 'create-notifications',
       name: 'create Notifications',
       path: '/notifications/create',

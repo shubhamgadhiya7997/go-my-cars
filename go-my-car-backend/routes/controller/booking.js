@@ -3,9 +3,8 @@ const booking = require("../../model/booking");
 const { SuccessCreated, InternalServerError, SuccessOk, BadRequest } = require("../../Response/response");
 const { getDataByPaginate } = require("../../common/common");
 const Mail = require("../../mailer/mail");
-const { default: mongoose } = require("mongoose");
 const car = require("../../model/car");
-
+const mongoose = require("mongoose")
 const addBooking = async (req, res) => {
     try {
         const { carID, location, startDate, endDate, couponCode } = req.body;
@@ -48,7 +47,7 @@ const getBooking = async (req, res) => {
     try {
         const { aggregate_options, options } = getDataByPaginate(req, '');
         aggregate_options.push({
-            $match: { userID: req.user._id, status: "Confirmed" }
+            $match: { userID: new mongoose.Types.ObjectId(req.user._id), status: "Confirmed" }
         })
         const aggregateQuery = booking.aggregate(aggregate_options);
         const Carbooking = await booking.aggregatePaginate(aggregateQuery, options);
@@ -63,7 +62,7 @@ const getPastBooking = async (req, res) => {
     try {
         const { aggregate_options, options } = getDataByPaginate(req, '');
         aggregate_options.push({
-            $match: { userID: req.user._id, status: "Completed" }
+            $match: { userID:new mongoose.Types.ObjectId(req.user._id), status: "Completed" }
         })
         const aggregateQuery = booking.aggregate(aggregate_options);
         const Carbooking = await booking.aggregatePaginate(aggregateQuery, options);

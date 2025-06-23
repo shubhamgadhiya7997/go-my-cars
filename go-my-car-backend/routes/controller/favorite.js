@@ -110,14 +110,14 @@ const postFavorite = async (req, res) => {
         }
         if (add == true) {
             favoritedata = await favorite.findOneAndUpdate(
-                { userID: req.user._id, carID },
+                { userID:new mongoose.Types.ObjectId(req.user._id), carID },
                 { $set: { userID: req.user._id, carID } },
                 { new: true, upsert: true }
             )
             return SuccessCreated(res, "Car added in favorite successfully", favoritedata);
 
         } else {
-            favoritedata = await favorite.findOneAndDelete({ userID: req.user._id, carID })
+            favoritedata = await favorite.findOneAndDelete({ userID: new mongoose.Types.ObjectId(req.user._id), carID })
             return SuccessCreated(res, "Car removed in favorite successfully", favoritedata);
         }
     } catch (error) {

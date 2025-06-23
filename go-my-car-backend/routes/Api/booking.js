@@ -5,7 +5,7 @@ const protected = require("../../middleware/protected")
 
 //app side
 router.post("/addbooking",protected, addBooking);
-router.get("/getBooking",protected, getBooking);
+router.get("/getbooking",protected, getBooking);
 router.post("/editbooking",protected, editBooking);
 router.get("/getPastBooking",protected, getPastBooking);
 router.get("/cancelbooking/:id",protected, deleteBooking);

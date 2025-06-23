@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { SuccessCreated, SuccessOk, BadRequest, InternalServerError, NotFound } = require("../../Response/response");
 const { getDataByPaginate } = require("../../common/common");
-
+const { default: mongoose } = require("mongoose");
 const register = async (req, res) => {
     try {
         const { fullName, email, phoneNumber, password } = req.body;
@@ -170,7 +170,7 @@ const editProfile = async (req, res) => {
         if (email || phoneNumber) {
 
             const existingUser = await user.findOne({
-                _id: { $ne: req.user._id }, isDeleted: false,
+                _id: { $ne:new mongoose.Types.ObjectId(req.user._id) }, isDeleted: false,
                 $or: [
                     { email: email },
                     { phoneNumber: phoneNumber }
@@ -200,7 +200,7 @@ const editProfile = async (req, res) => {
 
         console.log(" req.user._id ", req.user)
         const userdata = await user.findOneAndUpdate(
-            { _id: req.user._id },
+            { _id:new mongoose.Types.ObjectId(req.user._id) },
             { $set: updateFields },
             { new: true }
         )
@@ -230,7 +230,7 @@ const changePassword = async (req, res) => {
             const hasedPassword = await bcrypt.hash(newPassword, salt);
             const newUpdatedPassword = hasedPassword;
             const userdata = await user.findOneAndUpdate(
-                { _id: req.user._id, isDeleted: false },
+                { _id: new mongoose.Types.ObjectId(req.user._id), isDeleted: false },
                 { $set: { password: newUpdatedPassword } },
                 { new: true }
             )

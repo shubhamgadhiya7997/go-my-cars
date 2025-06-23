@@ -224,7 +224,7 @@ type UpdateBannerSchema = z.infer<typeof updateCouponValidationSchema>;
 
                         // Only add image name if it's an existing image (i.e., a string, not a File)
                         if (typeof currentImage === 'string') {
-                          setRemovedImages(prev => [...prev, currentImage]);
+                          setRemovedImages(prev: any => [...prev, currentImage]);
                         }
 
                         // Remove from field array
