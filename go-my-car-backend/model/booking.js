@@ -12,7 +12,7 @@ const bookingModal = new mongoose.Schema({
     },
     status: {
         type: String,
-          enum: ['Confirmed', 'Cancelled', 'Ongoing', 'Completed'],
+        enum: ['Confirmed', 'Cancelled', 'Ongoing', 'Completed'],
         default: "Confirmed"
     },
     startDate: {
@@ -23,6 +23,13 @@ const bookingModal = new mongoose.Schema({
     },
     couponCode: {
         type: String
+    },
+    price: {
+        type: Number
+    },
+    totalPrice: {
+        type: Number
+
     }
 
 

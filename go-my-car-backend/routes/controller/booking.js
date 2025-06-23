@@ -7,7 +7,7 @@ const car = require("../../model/car");
 const mongoose = require("mongoose")
 const addBooking = async (req, res) => {
     try {
-        const { carID, location, startDate, endDate, couponCode } = req.body;
+        const { carID, location, startDate, endDate, couponCode,price, totalPrice } = req.body;
         const start = moment(startDate);
         const end = moment(endDate);
         if (!start.isValid() || !end.isValid()) {
@@ -30,7 +30,7 @@ const addBooking = async (req, res) => {
         }
         console.log("req.user", req.user)
         const carbookingdata = new booking({
-            userID: req.user._id, carID, startDate: startDate, endDate: endDate, location, couponCode
+            userID: req.user._id, carID, startDate: startDate, endDate: endDate, location, couponCode,price, totalPrice 
         })
         await carbookingdata.save();
         const sendmail = Mail.SendBooking(req.user.email, req.user.fullName, startDate, endDate, location);
