@@ -49,6 +49,22 @@ const getBooking = async (req, res) => {
         aggregate_options.push({
             $match: { userID: new mongoose.Types.ObjectId(req.user._id), status: "Confirmed" }
         })
+           aggregate_options.push(
+            {
+                $lookup: {
+                    from: 'cars',
+                    localField: 'carID',
+                    foreignField: '_id',
+                    as: 'car'
+                },
+           },
+        {
+            $unwind: {
+                path: "$car",
+                preserveNullAndEmptyArrays: true
+            }
+        }
+        )
         const aggregateQuery = booking.aggregate(aggregate_options);
         const Carbooking = await booking.aggregatePaginate(aggregateQuery, options);
         return SuccessOk(res, "Carbooking get successfully.", Carbooking)
@@ -64,6 +80,22 @@ const getPastBooking = async (req, res) => {
         aggregate_options.push({
             $match: { userID:new mongoose.Types.ObjectId(req.user._id), status: "Completed" }
         })
+          aggregate_options.push(
+            {
+                $lookup: {
+                    from: 'cars',
+                    localField: 'carID',
+                    foreignField: '_id',
+                    as: 'car'
+                },
+           },
+        {
+            $unwind: {
+                path: "$car",
+                preserveNullAndEmptyArrays: true
+            }
+        }
+        )
         const aggregateQuery = booking.aggregate(aggregate_options);
         const Carbooking = await booking.aggregatePaginate(aggregateQuery, options);
         return SuccessOk(res, "Carbooking get successfully.", Carbooking)
