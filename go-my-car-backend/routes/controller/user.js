@@ -350,4 +350,14 @@ const deleteUser = async (req, res) => {
     }
 }
 
-module.exports = { register, login, forget, verify, resetPassword, editProfile, changePassword, getUser, activateInactivateUser, deleteUser }
+const getUserDetails = async (req,res) => {
+    try{
+        const userdata = await user.findById({_id : new mongoose.Types.ObjectId(req.user._id)});
+        return SuccessOk(res, "user details find successfully", userdata)
+    }catch (error) {
+        console.log("err", error);
+        return InternalServerError(res, "Internal Server Error", error.message)
+    }
+}
+
+module.exports = { register, login, forget, verify, resetPassword, editProfile, changePassword, getUser,getUserDetails, activateInactivateUser, deleteUser }
