@@ -63,8 +63,60 @@ const getBooking = async (req, res) => {
                 path: "$car",
                 preserveNullAndEmptyArrays: true
             }
-        }
+        },
+         {
+                $lookup: {
+                    from: 'reviews',
+                    localField: 'carID',
+                    foreignField: 'carID',
+                    as: 'review',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$review',
+                    preserveNullAndEmptyArrays: true,
+                },
+            }
         )
+          aggregate_options.push({
+            $addFields: {
+                averageRating: {
+                    $cond: [
+                        { $isArray: '$review.review' },
+                        { $avg: '$review.review.rating' },
+                        null
+                    ]
+                }
+            }
+        });
+         aggregate_options.push(
+                    {
+                        $lookup: {
+                            from: 'favorites',
+                            let: { carID: '$carID' },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $eq: ['$carID', '$$carID'] },
+                                                { $eq: ['$userID', new mongoose.Types.ObjectId(req.user._id)] },
+                                            ],
+                                        },
+                                    },
+                                },
+                            ],
+                            as: 'favorite',
+                        },
+                    },
+                    {
+                        $addFields: {
+                            favorite: { $gt: [{ $size: '$favorite' }, 0] },
+                        },
+                    },
+                )
+        
         const aggregateQuery = booking.aggregate(aggregate_options);
         const Carbooking = await booking.aggregatePaginate(aggregateQuery, options);
         return SuccessOk(res, "Carbooking get successfully.", Carbooking)
@@ -94,8 +146,60 @@ const getPastBooking = async (req, res) => {
                 path: "$car",
                 preserveNullAndEmptyArrays: true
             }
-        }
+        },
+           {
+                $lookup: {
+                    from: 'reviews',
+                    localField: 'carID',
+                    foreignField: 'carID',
+                    as: 'review',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$review',
+                    preserveNullAndEmptyArrays: true,
+                },
+            }
         )
+        aggregate_options.push({
+            $addFields: {
+                averageRating: {
+                    $cond: [
+                        { $isArray: '$review.review' },
+                        { $avg: '$review.review.rating' },
+                        null
+                    ]
+                }
+            }
+        });
+         aggregate_options.push(
+                    {
+                        $lookup: {
+                            from: 'favorites',
+                            let: { carID: '$carID' },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $eq: ['$carID', '$$carID'] },
+                                                { $eq: ['$userID', new mongoose.Types.ObjectId(req.user._id)] },
+                                            ],
+                                        },
+                                    },
+                                },
+                            ],
+                            as: 'favorite',
+                        },
+                    },
+                    {
+                        $addFields: {
+                            favorite: { $gt: [{ $size: '$favorite' }, 0] },
+                        },
+                    },
+                )
+        
         const aggregateQuery = booking.aggregate(aggregate_options);
         const Carbooking = await booking.aggregatePaginate(aggregateQuery, options);
         return SuccessOk(res, "Carbooking get successfully.", Carbooking)
@@ -272,6 +376,7 @@ const deleteBooking = async (req, res) => {
 
 const editBooking = async (req, res) => {
     try {
+        
         const { bookingId, carID, startDate, endDate } = req.body;
         const start = moment(startDate);
         const end = moment(endDate);
