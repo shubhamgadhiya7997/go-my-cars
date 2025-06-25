@@ -21,13 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CAR_GEAR, CAR_TYPE } from '@/utils/constants';
+import { CAR_GEAR, CAR_TYPE, LOCATION } from '@/utils/constants';
 import { useCreateCar } from '@/hooks/api/cars';
 import Toast from '@/components/toast/commonToast';
 import { useNavigate } from 'react-router-dom';
 import { onFormErrors } from '@/utils/helper';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 
 const sevenYearsAgo = dayjs().subtract(7, 'year');
@@ -103,7 +103,9 @@ unavailableDates: z.array(dateRangeSchema).default([]),
 
     fastag: z.boolean().default(false), // ✅ ADDED
     isAvailable: z.boolean().default(true), // ✅ ADDED
-    location: z.string().min(1, 'Location is required'), // ✅ ADDED
+    // location: z.string().min(1, 'Location is required'), // ✅ ADDED
+    location: z
+      .string({ required_error: 'Car location is required' }),
     hostName: z.string().min(1, 'Host name is required'), // ✅ ADDED
     chassicNo: z.string().min(1, 'Chassic no is required'), // ✅ ADDED
     engineNo: z.string().min(1, 'Engine no is required'), // ✅ ADDED
@@ -147,7 +149,7 @@ const CreateCar = () => {
 
       // startDate: new Date().toISOString().split('T')[0],
       // endDate: '',
-      location: '',
+      location: undefined,
       hostName: '',
       isActive: true,
       feature: [],
@@ -156,6 +158,8 @@ const CreateCar = () => {
       NumberPlate : ''
     },
   });
+
+
   const { control, register } = form;
   const [imagePreviews, setImagePreviews] = useState({});
 
@@ -455,22 +459,32 @@ const {
                 </FormItem>
               )}
             />
-    <FormField
+   
+
+              <FormField
               control={form.control}
               name="location"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter location"
-                      {...field}
-
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Enter car location
-                  </FormDescription>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select location" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.values(LOCATION).map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                
                   <FormMessage />
                 </FormItem>
               )}

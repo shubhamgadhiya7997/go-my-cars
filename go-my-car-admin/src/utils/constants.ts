@@ -13,6 +13,11 @@ export const CAR_GEAR = {
   MANUAL: 'manual', 
   AUTO: 'auto', 
 };
+
+export const LOCATION = {
+  AHMEDABAD: 'Ahmedabad'
+};
+
 export const CAR_TYPE = {
   PETROL: 'petrol', 
   DIESEL: 'diesel', 

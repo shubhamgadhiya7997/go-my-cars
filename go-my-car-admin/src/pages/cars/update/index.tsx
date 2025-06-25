@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { BASE_API_URL, CAR_GEAR, CAR_TYPE } from '@/utils/constants';
+import { BASE_API_URL, CAR_GEAR, CAR_TYPE, LOCATION } from '@/utils/constants';
 
 import {
   Select,
@@ -111,7 +111,10 @@ const updateCarValidationSchema = z
           }).min(1, 'Car color is required'),
     fastag: z.boolean().default(false), // ✅ ADDED
     isAvailable: z.boolean().default(true), // ✅ ADDED
-    location: z.string().min(1, 'Location is required'), // ✅ ADDED
+    // location: z.string().min(1, 'Location is required'), // ✅ ADDED
+   location: z
+         .string({ required_error: 'Car location is required' }),
+      
     hostName: z.string().min(1, 'Host name is required'), // ✅ ADDED
      chassicNo: z.string().min(1, 'Chassic no is required'), // ✅ ADDED
        engineNo: z.string().min(1, 'Engine no is required'), // ✅ ADDED
@@ -159,7 +162,7 @@ const UpdateCars = () => {
       carColor: '',
      availableDates: [],
     unavailableDates: [],
-      location: '',
+      location: undefined,
       hostName: '',
       isActive: true,
       feature: [],
@@ -187,7 +190,7 @@ const UpdateCars = () => {
     unavailableDates: [],
            insuranceExpiry: undefined,
       carColor: '',
-      location: '',
+      location: undefined,
       hostName: '',
       isActive: true,
       feature: [],
@@ -559,26 +562,36 @@ const {
                 </FormItem>
               )}
             />
-                <FormField
+           
+                           <FormField
               control={form.control}
               name="location"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter location"
-                      {...field}
-
-                    />
-                  </FormControl>
-                  <FormDescription>
-                  Enter car location
-                  </FormDescription>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select carlocation" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.values(LOCATION).map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="fastag"
