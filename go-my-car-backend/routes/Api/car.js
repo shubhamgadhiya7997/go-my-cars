@@ -1,5 +1,5 @@
 const express = require("express");
-const { addCar, getCar, updateCar, deleteCar, viewAllCar, viewCar } = require("../controller/car");
+const { addCar, getCar, updateCar, deleteCar, viewAllCar, viewCar, viewAvailableCar } = require("../controller/car");
 const upload = require("../../multer/upload");
 const router = express.Router();
 const protected = require("../../middleware/protected")
@@ -14,5 +14,6 @@ router.delete("/deletecar/:id",protected,deleteCar);
 //app side
 router.post("/viewallcar", protected,viewAllCar);
 router.get("/viewcar/:id",protected, viewCar);
+router.post("/viewavailablecar", protected,viewAvailableCar);
 
 module.exports = router

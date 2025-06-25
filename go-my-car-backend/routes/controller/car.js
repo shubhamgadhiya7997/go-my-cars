@@ -357,6 +357,7 @@ const viewAllCar = async (req, res) => {
 
         const bookedCarIds = conflictingBookings.map(b => b.carID);
         console.log("bookedCarIds", bookedCarIds)
+
         aggregate_options.push({
             $match: {
                 isAvailable: true,
@@ -461,34 +462,34 @@ const viewAllCar = async (req, res) => {
         const cardetail = await car.aggregatePaginate(aggregateQuery, options);
 
         const updatedCarList = cardetail.docs.map(car => {
-  const price = car.price;
+            const price = car.price;
 
-  let pricePerHour = 0;
-  if (durationInHours < 8) {
-    pricePerHour = price.price1hr;
-  } else if (durationInHours < 12) {
-    pricePerHour = price.price12hr;
-  } else if (durationInHours < 24) {
-    pricePerHour = price.fullDay; 
-  } else {
-    pricePerHour = price.fullDay;
-  }
+            let pricePerHour = 0;
+            if (durationInHours < 8) {
+                pricePerHour = price.price1hr;
+            } else if (durationInHours < 12) {
+                pricePerHour = price.price12hr;
+            } else if (durationInHours < 24) {
+                pricePerHour = price.fullDay;
+            } else {
+                pricePerHour = price.fullDay;
+            }
 
-  const totalPrice = Math.ceil(durationInHours) * pricePerHour;
+            const totalPrice = Math.ceil(durationInHours) * pricePerHour;
 
-  return {
-    ...car,
-    bookingDurationHours: durationInHours,
-    pricePerHour,
-    totalPrice,
-  };
-});
+            return {
+                ...car,
+                bookingDurationHours: durationInHours,
+                pricePerHour,
+                totalPrice,
+            };
+        });
 
-// Return updated car list
-return SuccessOk(res, "Car list with pricing", {
-  ...cardetail,
-  docs: updatedCarList
-});
+        // Return updated car list
+        return SuccessOk(res, "Car list with pricing", {
+            ...cardetail,
+            docs: updatedCarList
+        });
 
         // return SuccessOk(res, "AllCar fetched successfully.", cardetail)
 
@@ -553,4 +554,188 @@ const viewCar = async (req, res) => {
     }
 }
 
-module.exports = { addCar, getCar, updateCar, deleteCar, viewAllCar, viewCar }
+const viewAvailableCar = async (req, res) => {
+    try {
+        const { aggregate_options, options } = getDataByPaginate(req, '');
+
+        const { startDate, endDate, carID, location } = req.body;
+
+        console.log(" req.body", req.body)
+        if (!startDate || !endDate || !location) {
+            return BadRequest(res, "All filed is required")
+
+        }
+        const start = moment(startDate);
+        const end = moment(endDate);
+
+        console.log("start", start);
+        console.log("end", end);
+
+        if (!start.isValid() || !end.isValid()) {
+            return BadRequest(res, "Invalid date format",)
+        }
+        if (end.isBefore(start)) {
+            return BadRequest(res, "End date cannot be before start date");
+
+        }
+        const durationInMinutes = end.diff(start, 'minutes');
+
+        if (durationInMinutes < 60) {
+            return BadRequest(res, "Minimum duration must be at least 1 hour");
+        }
+        const durationInHours = end.diff(start, 'minutes') / 60;
+        console.log("Duration (hours):", durationInHours);
+        const bufferStart = moment(start).subtract(2, 'hours');
+        const bufferEnd = moment(end).add(2, 'hours');
+
+        const conflictingBookings = await booking.find({
+            startDate: { $lte: bufferEnd.toDate() },
+            endDate: { $gte: bufferStart.toDate() },
+            status: { $ne: "Cancelled" },
+            carID: carID
+        });
+
+        const bookedCarIds = conflictingBookings.map(b => b.carID);
+        console.log("bookedCarIds", bookedCarIds)
+
+        aggregate_options.push({
+            $match: {
+                isAvailable: true,
+                location,
+                _id: new mongoose.Types.ObjectId(carID),
+                _id: { $nin: bookedCarIds },
+                availableDates: {
+                    $elemMatch: {
+                        startDate: { $lt: new Date(startDate) },
+                        endDate: { $gt: new Date(endDate) },
+                    },
+                },
+                $nor: [
+                    {
+                        unavailableDates: {
+                            $elemMatch: {
+                                startDate: { $lte: new Date(endDate) },
+                                endDate: { $gte: new Date(startDate) },
+                            },
+                        },
+                    },
+                ],
+            },
+        });
+        aggregate_options.push(
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userID',
+                    foreignField: '_id',
+                    as: 'user',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$user',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+
+            // Lookup and unwind car info
+            {
+                $lookup: {
+                    from: 'reviews',
+                    localField: '_id',
+                    foreignField: 'carID',
+                    as: 'review',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$review',
+                    preserveNullAndEmptyArrays: true,
+                },
+            }
+        );
+        aggregate_options.push({
+            $addFields: {
+                averageRating: {
+                    $cond: [
+                        { $isArray: '$review.review' },
+                        { $avg: '$review.review.rating' },
+                        null
+                    ]
+                }
+            }
+        });
+        aggregate_options.push(
+            {
+                $lookup: {
+                    from: 'favorites',
+                    let: { carID: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$carID', '$$carID'] },
+                                        { $eq: ['$userID', new mongoose.Types.ObjectId(req.user._id)] },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
+                    as: 'favorite',
+                },
+            },
+            {
+                $addFields: {
+                    favorite: { $gt: [{ $size: '$favorite' }, 0] },
+                },
+            },
+        )
+
+        const cardetail = await car.aggregate(aggregate_options);
+        // const cardetail = await car.aggregatePaginate(aggregateQuery, options);
+        if (cardetail.length === 0) {
+            return NotFound(res, "Car not available for these date")
+        }else{
+            console.log("cardetail", cardetail)
+            const price = cardetail[0].price;
+           let pricePerHour = 0;
+            if (durationInHours < 8) {
+                pricePerHour = price.price1hr;
+            } else if (durationInHours < 12) {
+                pricePerHour = price.price12hr;
+            } else if (durationInHours < 24) {
+                pricePerHour = price.fullDay;
+            } else {
+                pricePerHour = price.fullDay;
+            }
+
+            const totalPrice = Math.ceil(durationInHours) * pricePerHour;
+  const settingData = await setting.findOne(
+            {},
+            {
+                _id: 0, // optional: exclude _id
+                protectionFees: 1,
+                convenienceFees: 1,
+            }
+        );
+        console.log("settingData", settingData)
+const cardata = {...cardetail[0], bookingDurationHours: durationInHours, pricePerHour,totalPrice}
+const settingDetails = settingData?.toObject?.() || {};
+
+const payload = {...cardata, settingDetails}
+           
+return SuccessOk(res, "Car get successfully.", payload)
+        }
+
+
+        // return SuccessOk(res, "Car get successfully.", cardetail)
+
+
+    } catch (error) {
+        console.log("err", error);
+        return InternalServerError(res, "Internal Server Error", error.message);
+    }
+}
+
+module.exports = { addCar, getCar, updateCar, deleteCar, viewAllCar, viewCar, viewAvailableCar }
