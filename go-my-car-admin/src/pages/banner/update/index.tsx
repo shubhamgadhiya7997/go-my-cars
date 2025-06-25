@@ -140,135 +140,133 @@ type UpdateBannerSchema = z.infer<typeof updateCouponValidationSchema>;
     );
   }
 
-  return (
-    <div className="container">
-      <h1 className="text-2xl font-bold mb-6">Update Banner</h1>
-      {/* Coupon Usage Statistics */}
+ return (
+  <div className="container">
+    <h1 className="text-2xl font-bold mb-6">Update Banner</h1>
 
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit, onFormErrors)}
-          className="space-y-8 w-full max-w-5xl"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-            <FormField
-              control={form.control}
-              name="isSelected"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">isSelected</FormLabel>
-                    <FormDescription>
-                      Toggle to activate or deactivate the isSelected
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={(val) => field.onChange(val)}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit, onFormErrors)}
+        className="space-y-8 w-full max-w-5xl"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+          {/* isSelected Switch */}
+          <FormField
+            control={form.control}
+            name="isSelected"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">isSelected</FormLabel>
+                  <FormDescription>
+                    Toggle to activate or deactivate the banner
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={(val) => field.onChange(val)}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
 
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <label className="block font-medium">Upload Images</label>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => appendImage(null)}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Image
-                </Button>
-                <FormMessage />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {imageFields.map((field, index) => (
-                  <div key={field.id} className="flex flex-col gap-2">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      {...register(`images.${index}`)}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const previewUrl = URL.createObjectURL(file);
-                          setImagePreviews((prev:any) => ({ ...prev, [index]: previewUrl }));
-                        }
-                      }}
-                    />
-                    {imagePreviews[index] && (
-                      <img
-                        src={imagePreviews[index]}
-                        alt={`Preview ${index}`}
-                        className="w-32 h-32 object-cover border rounded"
-                      />
-                    )}
-                    {typeof form.formState.errors.image?.message === 'string' && (
-                      <p className="text-red-500 text-sm">
-                        {form.formState.errors.image.message}
-                      </p>
-                    )}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => {
-                        const currentImage = form.getValues(`images.${index}`);
-
-                        // Only add image name if it's an existing image (i.e., a string, not a File)
-                        if (typeof currentImage === 'string') {
-                          setRemovedImages(prev: any => [...prev, currentImage]);
-                        }
-
-                        // Remove from field array
-                        removeImage(index);
-
-                        // Remove preview
-                        setImagePreviews((prev: any) => {
-                          const updated = { ...prev };
-                          delete updated[index];
-                          return updated;
-                        });
-                      }}
-                      className="px-2 w-fit text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-
-                  </div>
-                ))}
-              </div>
+          {/* Upload Images */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <label className="block font-medium">Upload Images</label>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => appendImage(null)}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Image
+              </Button>
+              <FormMessage />
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {imageFields.map((field, index) => (
+                <div key={field.id} className="flex flex-col gap-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    {...register(`images.${index}`)}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const previewUrl = URL.createObjectURL(file);
+                        setImagePreviews((prev) => ({
+                          ...prev,
+                          [field.id]: previewUrl
+                        }));
+                      }
+                    }}
+                  />
 
+                  {imagePreviews[field.id] && (
+                    <img
+                      src={imagePreviews[field.id]}
+                      alt={`Preview ${index}`}
+                      className="w-32 h-32 object-cover border rounded"
+                    />
+                  )}
 
+                  {form.formState.errors.images?.[index]?.message && (
+                    <p className="text-red-500 text-sm">
+                      {form.formState.errors.images[index]?.message as string}
+                    </p>
+                  )}
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      const currentImage = form.getValues(`images.${index}`);
+                      if (typeof currentImage === 'string') {
+                        setRemovedImages((prev) => [...prev, currentImage]);
+                      }
+
+                      removeImage(index);
+                      setImagePreviews((prev) => {
+                        const updated = { ...prev };
+                        delete updated[field.id];
+                        return updated;
+                      });
+                    }}
+                    className="px-2 w-fit text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
-          {/* Submit and Action Buttons */}
-          <div className="flex justify-end space-x-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate('/banner')}
-            >
-              Cancel
-            </Button>
+        </div>
 
-    
-            <Button type="submit" disabled={isUpdateCouponPending}>
-              {isUpdateCouponPending ? 'Updating...' : 'Update Banner'}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </div>
-  );
+        {/* Submit Buttons */}
+        <div className="flex justify-end space-x-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/banner')}
+          >
+            Cancel
+          </Button>
+
+          <Button type="submit" disabled={isUpdateCouponPending}>
+            {isUpdateCouponPending ? 'Updating...' : 'Update Banner'}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  </div>
+);
+
 };
 
 export default UpdateBanner;
