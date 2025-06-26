@@ -597,13 +597,17 @@ const viewAvailableCar = async (req, res) => {
 
         const bookedCarIds = conflictingBookings.map(b => b.carID);
         console.log("bookedCarIds", bookedCarIds)
+ aggregate_options.push({
+            $match: {
+                   _id: new mongoose.Types.ObjectId(carID),
+            }
+ })
 
         aggregate_options.push({
             $match: {
                 isAvailable: true,
                 location,
-                _id: new mongoose.Types.ObjectId(carID),
-                _id: { $nin: bookedCarIds },
+                _id: { $nin: bookedCarIds,  },
                 availableDates: {
                     $elemMatch: {
                         startDate: { $lt: new Date(startDate) },
@@ -691,7 +695,7 @@ const viewAvailableCar = async (req, res) => {
                 },
             },
         )
-
+console.log("aggregate_options", aggregate_options)
         const cardetail = await car.aggregate(aggregate_options);
         // const cardetail = await car.aggregatePaginate(aggregateQuery, options);
         if (cardetail.length === 0) {
@@ -719,7 +723,8 @@ const viewAvailableCar = async (req, res) => {
                 convenienceFees: 1,
             }
         );
-        console.log("settingData", settingData)
+        // console.log("settingData", settingData)
+        // console.log("cardetail", cardetail)
 const cardata = {...cardetail[0], bookingDurationHours: durationInHours, pricePerHour,totalPrice}
 const settingDetails = settingData?.toObject?.() || {};
 
