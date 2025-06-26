@@ -561,7 +561,7 @@ const viewAvailableCar = async (req, res) => {
         const { startDate, endDate, carID, location } = req.body;
 
         console.log(" req.body", req.body)
-        if (!startDate || !endDate || !location) {
+        if (!startDate || !endDate || !location, !carID) {
             return BadRequest(res, "All filed is required")
 
         }
@@ -597,17 +597,17 @@ const viewAvailableCar = async (req, res) => {
 
         const bookedCarIds = conflictingBookings.map(b => b.carID);
         console.log("bookedCarIds", bookedCarIds)
- aggregate_options.push({
+        aggregate_options.push({
             $match: {
-                   _id: new mongoose.Types.ObjectId(carID),
+                _id: new mongoose.Types.ObjectId(carID),
             }
- })
+        })
 
         aggregate_options.push({
             $match: {
                 isAvailable: true,
                 location,
-                _id: { $nin: bookedCarIds,  },
+                _id: { $nin: bookedCarIds, },
                 availableDates: {
                     $elemMatch: {
                         startDate: { $lt: new Date(startDate) },
@@ -695,15 +695,50 @@ const viewAvailableCar = async (req, res) => {
                 },
             },
         )
-console.log("aggregate_options", aggregate_options)
+        console.log("aggregate_options", aggregate_options)
         const cardetail = await car.aggregate(aggregate_options);
         // const cardetail = await car.aggregatePaginate(aggregateQuery, options);
         if (cardetail.length === 0) {
-            return NotFound(res, "Car not available for these date")
-        }else{
+            let aggregate_options1 = []
+            aggregate_options1.push({
+                $match: {
+                    _id: new mongoose.Types.ObjectId(carID),
+                }
+            })
+               aggregate_options1.push(
+            {
+                $lookup: {
+                    from: 'favorites',
+                    let: { carID: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$carID', '$$carID'] },
+                                        { $eq: ['$userID', new mongoose.Types.ObjectId(req.user._id)] },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
+                    as: 'favorite',
+                },
+            },
+            {
+                $addFields: {
+                    favorite: { $gt: [{ $size: '$favorite' }, 0] },
+                },
+            },
+        )
+            const cardata = await car.aggregate(aggregate_options1);
+            console.log("cardata", cardata)
+            const payload = {...cardata[0], isCarAvailable: false}
+            return SuccessOk(res, "Car get successfully.", payload)
+        } else {
             console.log("cardetail", cardetail)
             const price = cardetail[0].price;
-           let pricePerHour = 0;
+            let pricePerHour = 0;
             if (durationInHours < 8) {
                 pricePerHour = price.price1hr;
             } else if (durationInHours < 12) {
@@ -715,22 +750,22 @@ console.log("aggregate_options", aggregate_options)
             }
 
             const totalPrice = Math.ceil(durationInHours) * pricePerHour;
-  const settingData = await setting.findOne(
-            {},
-            {
-                _id: 0, // optional: exclude _id
-                protectionFees: 1,
-                convenienceFees: 1,
-            }
-        );
-        // console.log("settingData", settingData)
-        // console.log("cardetail", cardetail)
-const cardata = {...cardetail[0], bookingDurationHours: durationInHours, pricePerHour,totalPrice}
-const settingDetails = settingData?.toObject?.() || {};
+            const settingData = await setting.findOne(
+                {},
+                {
+                    _id: 0, // optional: exclude _id
+                    protectionFees: 1,
+                    convenienceFees: 1,
+                }
+            );
+            // console.log("settingData", settingData)
+            // console.log("cardetail", cardetail)
+            const cardata = { ...cardetail[0], bookingDurationHours: durationInHours, pricePerHour, totalPrice, isCarAvailable: true }
+            const settingDetails = settingData?.toObject?.() || {};
 
-const payload = {...cardata, settingDetails}
-           
-return SuccessOk(res, "Car get successfully.", payload)
+            const payload = { ...cardata, settingDetails }
+
+            return SuccessOk(res, "Car get successfully.", payload)
         }
 
 
