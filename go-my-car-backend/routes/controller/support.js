@@ -1,6 +1,6 @@
 const { getDataByPaginate } = require("../../common/common");
 const support = require("../../model/support");
-const { SuccessCreated, InternalServerError, SuccessOk } = require("../../Response/response");
+const { SuccessCreated, InternalServerError, SuccessOk, BadRequest } = require("../../Response/response");
 const Mail = require("../../mailer/mail");
 const getSupport = async (req, res) => {
   try {
@@ -45,6 +45,10 @@ const getSupport = async (req, res) => {
 const postSupport = async (req, res) => {
     try {
         const { fullName, email, phoneNumber, comment } = req.body;
+             if (!fullName || !email || !phoneNumber || !comment) {
+                   return BadRequest(res, "All filed is required")
+       
+               }
         const supportData = support({ fullName, email, phoneNumber, comment, userID: req.user._id });
         await supportData.save();
         return SuccessCreated(res, "Support added successfully.", supportData)

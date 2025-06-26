@@ -1,7 +1,7 @@
 const { getDataByPaginate } = require("../../common/common");
 const Mail = require("../../mailer/mail");
 const partner = require("../../model/partner");
-const { SuccessCreated, InternalServerError, SuccessOk } = require("../../Response/response");
+const { SuccessCreated, InternalServerError, SuccessOk, BadRequest } = require("../../Response/response");
 const { default: mongoose } = require("mongoose");
 
 const getPartner = async (req, res) => {
@@ -48,6 +48,11 @@ const getPartner = async (req, res) => {
 const postPartner = async (req, res) => {
     try {
         const { fullName, email, phoneNumber, detail } = req.body;
+           if (!fullName || !email || !phoneNumber || !detail) {
+                   return BadRequest(res, "All filed is required")
+       
+               }
+
         const partnerData = partner({ fullName, email, phoneNumber, detail, userID: new mongoose.Types.ObjectId(req.user._id) });
         await partnerData.save();
         return SuccessCreated(res, "partner added successfully.", partnerData)
