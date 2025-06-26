@@ -733,7 +733,7 @@ const viewAvailableCar = async (req, res) => {
         )
             const cardata = await car.aggregate(aggregate_options1);
             console.log("cardata", cardata)
-            const payload = {...cardata[0], isCarAvailable: false}
+            const payload = {...cardata[0], bookingDurationHours: durationInHours, pricePerHour:0, totalPrice:0,isCarAvailable: false}
             return SuccessOk(res, "Car get successfully.", payload)
         } else {
             console.log("cardetail", cardetail)
