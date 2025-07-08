@@ -1,6 +1,7 @@
 const admin = require('./firebase');
 
 async function sendNotification(token, title, body, data = {}) {
+  console.log("token", token)
   const message = {
     notification: { title, body },
     token,
