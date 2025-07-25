@@ -166,14 +166,11 @@ convenienceFees: data?.data?.convenienceFees,
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Upload a terms And Condition</CardTitle>
-          <CardDescription>
-            Select a file to upload and click the upload button.
-          </CardDescription>
-        </CardHeader>
+      <p className="flex rounded-xl border bg-card text-card-foreground shadow justify-space-between">
+      
         <CardContent>
+          <h1 className=" font-semibold leading-none tracking-tight">Upload a terms And Condition</h1>
+          <p className="text-sm text-muted-foreground">  Select a file to upload and click the upload button.</p>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="flex items-center justify-left w-full">
               <label
@@ -234,16 +231,11 @@ convenienceFees: data?.data?.convenienceFees,
               </div>
 
         </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Upload a privacy policy</CardTitle>
-          <CardDescription>
-            Select a file to upload and click the upload button.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+           <CardContent>
+                 <h1 className="font-semibold leading-none tracking-tight">Upload a privacy policy</h1>
+          <p className="text-sm text-muted-foreground">   Select a file to upload and click the upload button.</p>
+        
           <form onSubmit={handleprivacySubmit} className="grid gap-4">
             <div className="flex items-center justify-left w-full">
               <label
@@ -303,7 +295,9 @@ convenienceFees: data?.data?.convenienceFees,
 
           </div>
         </CardContent>
-      </Card>
+      </p>
+
+
 
         <Card>
         <CardHeader>

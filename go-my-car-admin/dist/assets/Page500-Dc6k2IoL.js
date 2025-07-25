@@ -1,1 +1,0 @@
-import{j as r,aq as e}from"./index-CiOuKirm.js";function t(){return r.jsxs(r.Fragment,{children:[r.jsx(e,{children:r.jsx("title",{children:" 500 Internal Server Error!"})}),r.jsx("h1",{children:" 500 Internal Server Error!"})]})}export{t as default};

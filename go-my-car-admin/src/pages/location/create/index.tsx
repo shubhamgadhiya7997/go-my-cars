@@ -14,73 +14,59 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { CAR_GEAR, CAR_TYPE } from '@/utils/constants';
-import { useCreateCar } from '@/hooks/api/cars';
 import Toast from '@/components/toast/commonToast';
 import { useNavigate } from 'react-router-dom';
 import { onFormErrors } from '@/utils/helper';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { useCreateCoupon } from '@/hooks/api/coupon';
+import { useCreateLocation } from '@/hooks/api/location';
 
 // Define the plan schema with Zod
-const createCarValidationSchema = z
+const createLocationValidationSchema = z
   .object({
-    couponCode: z
-               .string({ required_error: 'couponCode is required' })
-                .min(1, 'couponCode cannot be empty')
-               .trim(),
-           amount: z
-               .number({
-                 required_error: 'amount Value is required',
-               }),
-         isActive: z.boolean().optional(),
-   
+    name: z
+      .string({ required_error: 'location is required' })
+      .min(1, 'location cannot be empty')
+      .trim(),
+
+    isActive: z.boolean().optional(),
+
   })
   .strict();
 
 // Define the form component
-const CreateCoupon = () => {
+const CreateLocation = () => {
   const navigate = useNavigate();
-  const onSuccessCreateCar = data => {
-    Toast('success', data?.message || 'Coupon Added Successfully');
-    navigate('/coupon');
+  const onSuccessCreateLocation = data => {
+    Toast('success', data?.message || 'Location Added Successfully');
+    navigate('/location');
   };
-  const { mutate: createCoupon, isPending: isCreateCarPending } =
-    useCreateCoupon(onSuccessCreateCar);
+  const { mutate: createLocation, isPending: isCreateLocationPending } =
+    useCreateLocation(onSuccessCreateLocation);
 
   // Initialize the form with default values
   const form = useForm({
-    resolver: zodResolver(createCarValidationSchema),
+    resolver: zodResolver(createLocationValidationSchema),
     defaultValues: {
-      couponCode: '',
-      amount: '',
+      name: '',
       isActive: false
     },
   });
 
- 
+
   function onSubmit(data) {
     console.log("data", data)
     const payload = {
-      couponCode: data.couponCode,
-      amount: data.amount,
+      name: data.name,
       isActive: data.isActive
     }
 
-    createCoupon(payload);
+    createLocation(payload);
   }
 
   return (
     <div className="container  ">
-      <h1 className="text-2xl font-bold mb-6">Create New Coupon</h1>
+      <h1 className="text-2xl font-bold mb-6">Create New Location</h1>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit, onFormErrors)}
@@ -90,50 +76,24 @@ const CreateCoupon = () => {
             {/* Coupon Code */}
             <FormField
               control={form.control}
-              name="couponCode"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>couponCode</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter couponCode"
+                      placeholder="Enter location name"
                       {...field}
 
                     />
                   </FormControl>
-                 
+
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Discount Type */}
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>car amount</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter amount"
-                      {...field}
 
-                     onChange={(e) => {
-    const value = e.target.value;
-    field.onChange(value === '' ? undefined : Number(value));
-  }}
-
-                    />
-                  </FormControl>
-                 
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-        
             <FormField
               control={form.control}
               name="isActive"
@@ -142,7 +102,7 @@ const CreateCoupon = () => {
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">isActive</FormLabel>
                     <FormDescription>
-                      Toggle to activate or deactivate the coupon
+                      Toggle to activate or deactivate the location
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -154,9 +114,9 @@ const CreateCoupon = () => {
                 </FormItem>
               )}
             />
-          
-          
-           
+
+
+
 
 
 
@@ -167,12 +127,12 @@ const CreateCoupon = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate('/coupon')}
+              onClick={() => navigate('/location')}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isCreateCarPending}>
-              {isCreateCarPending ? 'Creating...' : 'Create Coupon'}
+            <Button type="submit" disabled={isCreateLocationPending}>
+              {isCreateLocationPending ? 'Creating...' : 'Create Location'}
             </Button>
           </div>
         </form>
@@ -181,4 +141,4 @@ const CreateCoupon = () => {
   );
 };
 
-export default CreateCoupon;
+export default CreateLocation;

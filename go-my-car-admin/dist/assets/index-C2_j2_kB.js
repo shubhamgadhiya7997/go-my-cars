@@ -1,1 +1,0 @@
-import{y as n,z as e,A as s,u as c}from"./index-CiOuKirm.js";const i=e,o={CATEGORY:i+"/api/admin/addnotification",NOTIFICATION:i+"/api/admin/getnotification"},r=async()=>n("get",o.NOTIFICATION),u=async t=>n("post",o.CATEGORY,t),T=["notification"],I=()=>s({queryKey:[T],queryFn:()=>r()}),N=t=>c({mutationFn:u,retry:!1,onSuccess:a=>{t(a)}});export{N as a,I as u};

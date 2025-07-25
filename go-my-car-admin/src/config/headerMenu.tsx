@@ -9,7 +9,8 @@ import {
   Handshake,
   Bell,
   Component,
-  ShoppingCart
+  ShoppingCart,
+  LocateIcon
 } from 'lucide-react';
 
 export const menuItems = [
@@ -24,4 +25,5 @@ export const menuItems = [
   { name: 'partner', icon: Handshake, path: '/partner' },
   { name: 'notifications', icon: Bell, path: '/notifications' },
   { name: 'favorite', icon: ShoppingCart, path: '/favorite' },
+  { name: 'location', icon: LocateIcon, path: '/location' },
 ];

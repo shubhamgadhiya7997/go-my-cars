@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useTableFilters } from '@/hooks/useTableFilters';
 import CopyToClipboard from '@/components/copyToClipBoard';
 import { useGetPartner } from '@/hooks/api/partner';
+import { useDeleteLocation, useGetLocation } from '@/hooks/api/location'
 import { Link } from 'react-router-dom';
 import {
   Select,
@@ -19,7 +20,10 @@ import {
 } from '@/components/ui/select';
 import { exportToExcel } from '@/lib/utils';
 import dayjs from 'dayjs';
-const Partners = () => {
+import AlertDialogComponent from '@/components/alertDialog/alertConfirmDialog';
+import Toast from '@/components/toast/commonToast';
+
+const Location = () => {
 
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({
@@ -28,31 +32,36 @@ const Partners = () => {
     totalPages: null,
     totalDocs: null,
   });
- 
+    const [id, setId] = useState('');
+  const [isDeleteUserAlertOpen, setDeleteUserAlertOpen] = useState(false);
 
+    const onDeleteSuccessHandler = (data: any) => {
+    Toast('success', data?.message || 'Location deleted successfully');
+  };
+  const { mutate: deleteLocation, isSuccess: isDeleteSuccess } =
+    useDeleteLocation(onDeleteSuccessHandler);
+
+  const handleDelete = () => {
+    deleteLocation(id);
+  };
+
+console.log("1id", id)
   const filters = [
     {
-      col_key: 'fullName',
+      col_key: 'name',
       filedType: 'input',
-      queryKey: 'fullName',
-      placeHolder: 'Search partner by full name',
+      queryKey: 'name',
+      placeHolder: 'Search location by name',
     },
     {
-      col_key: 'email',
-      filedType: 'input',
-      queryKey: 'email',
-      placeHolder: 'Search partner by email',
-    },
-   
-    {
-      col_key: 'status',
-      queryKey: 'status',
+      col_key: 'isActive',
+      queryKey: 'isActive',
       filedType: 'select',
-      placeHolder: 'All Pending/Completed',
-      defaultLabelValue: 'All Pending/Completed  ', // optional fallback label
+      placeHolder: 'All Active/InActive',
+      defaultLabelValue: 'All Active/InActive',
       options: [
-        { label: 'Pending', value: false },
-        { label: 'Completed', value: true },
+        { label: 'Active', value: true },
+        { label: 'InActive', value: false },
       ],
     },
   ];
@@ -73,7 +82,7 @@ const Partners = () => {
     isError,
     isSuccess,
     refetch,
-  } = useGetPartner({
+  } = useGetLocation({
     limit: pagination.limit,
     page: pagination.page,
     search: search,
@@ -91,6 +100,7 @@ const Partners = () => {
     }
   }, [apiResponse]);
 
+  console.log("data123", data)
   useEffect(() => {
     refetch();
   }, [
@@ -99,10 +109,13 @@ const Partners = () => {
     refetch,
     search,
     searchQueryParams,
+    isDeleteSuccess
   ]);
 
   const handlePageChange = page =>
     setPagination(prev => ({ ...prev, page: page }));
+
+  
 
   const columns = [
     {
@@ -124,102 +137,64 @@ const Partners = () => {
     },
 
     {
-      accessorKey: 'email',
-      header: 'email',
-      cell: ({ row }) => <div>{row.getValue('email')}</div>,
+      accessorKey: 'name',
+      header: 'name',
+      cell: ({ row }) => <div>{row.getValue('name')}</div>,
     },
 
     {
-      accessorKey: 'fullName',
-      header: 'Full Name',
-      cell: ({ row }) => <div>{row.getValue('fullName')}</div>,
+      accessorKey: 'isActive',
+      header: 'isActive',
+      cell: ({ row }) => (
+        <div>
+          {row.getValue('isActive') === true ? (
+            <span className='bg-green-100 text-green-800 px-2 py-1 rounded'>
+              Active
+            </span>
+          ) : (
+            <span className='bg-red-100 text-red-800 px-2 py-1 rounded'>
+              InActive
+            </span>
+          )}
+        </div>
+      ),
     },
     {
-      accessorKey: 'phoneNumber',
-      header: 'Phone Number',
-      cell: ({ row }) => <div>{row.getValue('phoneNumber')}</div>,
-      visible: false, // Hidden by default
-    },
-    {
-      accessorKey: 'location',
-      header: 'location',
-      cell: ({ row }) => <div>{row.getValue('location')}</div>,
-      visible: false, // Hidden by default
-    },
-     {
-      accessorKey: 'area',
-      header: 'area',
-      cell: ({ row }) => <div>{row.getValue('area')}</div>,
-      visible: false, // Hidden by default
-    },
-      {
-      accessorKey: 'carName',
-      header: 'car Name',
-      cell: ({ row }) => <div>{row.getValue('carName')}</div>,
-      visible: false, // Hidden by default
-    },
-      {
-      accessorKey: 'carNumber',
-      header: 'car Number',
-      cell: ({ row }) => <div>{row.getValue('carNumber')}</div>,
-      visible: false, // Hidden by default
-    },
-     {
-          accessorFn: row => row.car,
-          id: 'registrationDate',
-          header: 'registration Date',
-          cell: ({ row }) => {
-            const endDate = row.original?.registrationDate;
-            const formatted = endDate
-              ? dayjs(endDate).format('DD MMM YYYY, hh:mm A')
-              : 'No registration date';
-    
-            return <div>{formatted}</div>
-          }
-    
-        },
-      {
-  accessorKey: 'reply',
-  header: 'Status',
-  cell: ({ row }) => {
-    const reply = row.getValue('reply');
-    return <div>{reply ? 'Completed' : 'Pending'}</div>;
-  },
-},
-{
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => (
         <div className="flex w-full gap-2">
 
           <Link
-            to={`/partner/view/${row.original._id}`}
+            to={`/location/view/${row.original._id}`}
             className="hover:underline"
           >
             View
           </Link>
-       
+          <Link
+            to='#'
+            className='hover:underline text-red-500'
+            onClick={() => { setDeleteUserAlertOpen(true); setId(row.original._id) }}
+          >
+            Delete
+          </Link>
+
         </div>
       ),
     },
-  
+
   ];
-const header = ['Full Name', 'Email', 'Query', 'Status','Reply', 'Created At', 'Updated At'];
+  const header = ['name', 'isActive'];
   const rowdata = data.map(item => ({
-    'Full Name': item.fullName,
-    'Email': item.email,
-    'Query': item.detail,
-    'Status': item.reply ? 'Completed' : 'Pending',
-    'Reply': item.reply ? item.reply : "-",
-    'Created At': item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '',
-    'Updated At': item.updatedAt ? dayjs(item.updatedAt).format('DD MMM YYYY, hh:mm A') : '',
+    'Name': item.name,
+    'isActive': item.isActive
   }));
-  const filename = `${new Date()}-partner.xlsx`
+  const filename = `${new Date()}-location.xlsx`
 
 
   return (
     <div>
-      <PageTitle title="partners" />
+      <PageTitle title="Location" />
       <div className="border rounded-xl p-4 flex flex-col min-h-[700px]">
         <div className="flex justify-between mb-4 gap-2">
           <div className="grid grid-cols-3 gap-3 flex-1">
@@ -229,7 +204,7 @@ const header = ['Full Name', 'Email', 'Query', 'Status','Reply', 'Created At', '
               onChange={e => handleSearchChange(e.target.value)}
               className="max-w-sm"
             /> */}
-  {filters.map((filter) =>
+            {filters.map((filter) =>
               filter.filedType === 'select' ? (
                 <>
                   <Select
@@ -262,18 +237,20 @@ const header = ['Full Name', 'Email', 'Query', 'Status','Reply', 'Created At', '
               )
             )}
           </div>
+          <Button asChild>
+            <Link to="/location/create">Create New Location</Link>
+          </Button>
 
-        
         </div>
-        
-                <div>
-                          <Button
-                            onClick={() => exportToExcel(header, rowdata, filename)}
-                            className="text-white mt-2 px-4 py-2 rounded"
-                          >
-                            Export to Excel
-                          </Button>
-                        </div>
+
+        <div>
+          <Button
+            onClick={() => exportToExcel(header, rowdata, filename)}
+            className="text-white mt-2 px-4 py-2 rounded"
+          >
+            Export to Excel
+          </Button>
+        </div>
         {isPending && (
           <div className="h-[600px] flex items-center justify-center">
             <Loader2 className="mr-2 h-10 w-10 animate-spin" />
@@ -296,8 +273,20 @@ const header = ['Full Name', 'Email', 'Query', 'Status','Reply', 'Created At', '
           />
         )}
       </div>
+
+         <AlertDialogComponent
+        title='Are you sure you want Delete this Location?'
+        description=''
+        confirmText='Delete Location'
+        cancelText='Cancel'
+        onConfirm={() => handleDelete()}
+        confirmButtonClass='bg-primary  hover:bg-primary-600'
+        open={isDeleteUserAlertOpen}
+        setOpen={setDeleteUserAlertOpen}
+      />
+
     </div>
   );
 };
 
-export default Partners;
+export default Location;

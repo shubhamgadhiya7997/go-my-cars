@@ -1,1 +1,0 @@
-import{j as e,aq as s}from"./index-CiOuKirm.js";function i(){return e.jsxs(e.Fragment,{children:[e.jsx(s,{children:e.jsx("title",{children:" 403 No Permission!"})}),e.jsx("h1",{children:" 403 No Permission!"})]})}export{i as default};

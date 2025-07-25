@@ -19,6 +19,7 @@ import {
   BadgePlus,
   Eye,
   ShoppingCart,
+  LocateIcon,
 } from 'lucide-react';
 
 export const sidebarMenus = {
@@ -147,6 +148,22 @@ export const sidebarMenus = {
       path: '/favorite',
       icon: ShoppingCart,
       title: 'favorite',
+    },
+  ],
+  location: [
+    {
+      key: 'location',
+      name: 'location',
+      path: '/location',
+      icon: LocateIcon,
+      title: 'location',
+    },
+      {
+      key: 'create-location',
+      name: 'create Location',
+      path: '/location/create',
+      icon: BadgePlus,
+
     },
   ],
 };

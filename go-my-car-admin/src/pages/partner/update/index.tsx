@@ -18,7 +18,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { onFormErrors } from '@/utils/helper';
 import { useEffect, useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
-import {useUpdatePartner, useUpdateSupport, useViewPartner, useViewSupport } from '@/hooks/api/partner';
+import { useUpdatePartner, useUpdateSupport, useViewPartner, useViewSupport } from '@/hooks/api/partner';
 
 
 
@@ -48,11 +48,16 @@ const UpdatePartner = () => {
 
   const updateSupportValidationSchema = z
     .object({
-           email: z.string().optional(), // ✅ ADDED
-                fullName: z.string().optional(), // ✅ ADDED
-                phoneNumber: z.string().optional(), // ✅ ADDED
-                detail: z.string().optional(), // ✅ ADDED
-            
+      email: z.string().optional(), // ✅ ADDED
+      fullName: z.string().optional(), // ✅ ADDED
+      phoneNumber: z.string().optional(), // ✅ ADDED
+      detail: z.string().optional(), // ✅ ADDED
+      location: z.string().optional(), // ✅ ADDED
+      area: z.string().optional(), // ✅ ADDED
+      carName: z.string().optional(), // ✅ ADDED
+      carNumber: z.string().optional(), // ✅ ADDED
+      registrationDate: z.string().optional(), // ✅ ADDED
+
       reply: z
         .string({ required_error: 'message is required' })
         .min(1, 'message cannot be empty')
@@ -80,8 +85,12 @@ const UpdatePartner = () => {
       email: bannerData?.email || '',
       phoneNumber: bannerData?.phoneNumber || '',
       fullName: bannerData?.fullName || '',
-      detail: bannerData?.detail || '',
-      reply: bannerData?.reply || ''
+      registrationDate: bannerData?.registrationDate ? new Date(bannerData?.registrationDate).toISOString().split('T')[0] || '' : '',
+      location: bannerData?.location || '',
+      area: bannerData?.area || '',
+      carName: bannerData?.carName || '',
+      carNumber: bannerData?.carNumber || '',
+      reply: bannerData?.reply || '',
     });
   }, [supportDataResponse]);
 
@@ -89,8 +98,8 @@ const UpdatePartner = () => {
   function onSubmit(data) {
     console.log("data", data)
     const payload = {
-         reply: data.reply,
-      email:data.email
+      reply: data.reply,
+      email: data.email
     }
     updateSupport({
       id,
@@ -159,12 +168,65 @@ const UpdatePartner = () => {
             />
             <FormField
               control={form.control}
-              name="detail"
+              name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>detail</FormLabel>
+                  <FormLabel>location</FormLabel>
                   <FormControl>
-                    <Input placeholder="detail" disabled={true} {...field} />
+                    <Input placeholder="location" disabled={true} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+              <FormField
+              control={form.control}
+              name="area"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>area</FormLabel>
+                  <FormControl>
+                    <Input placeholder="area" disabled={true} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+             <FormField
+              control={form.control}
+              name="carName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>car Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="carName" disabled={true} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="carNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>car Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="carNumber" disabled={true} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="registrationDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>registration Date</FormLabel>
+                  <FormControl>
+                    <Input type="date"  disabled={true} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

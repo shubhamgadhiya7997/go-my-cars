@@ -14,19 +14,32 @@ const partnerModal = new mongoose.Schema({
         type: String,
         require: true
     },
-    detail: {
+    location: {
         type: String,
         require: true
     },
-    userID: {
-        type: mongoose.Types.ObjectId,
-        ref: "users"
+    area:{
+        type: String,
+        require: true
     },
-      reply: {
+    registrationDate: {
+        type: Date,
+        require: true
+    },
+    carName: {
+        type: String,
+        require: true
+    },
+    carNumber: {
+        type: String,
+        require: true
+    },
+
+    reply: {
         type: String
     }
 },
-{timestamps: true}
+    { timestamps: true }
 );
 partnerModal.plugin(aggregatePaginate);
 module.exports = mongoose.model("partners", partnerModal);

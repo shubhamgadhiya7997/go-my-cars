@@ -22,6 +22,9 @@ const CreateNotification = lazy(() => import('@/pages/notifications/create'));
 const Coupon = lazy(() => import("@/pages/coupon"));
 const CouponCreate = lazy(() => import("@/pages/coupon/create/index"));
 const CouponUpdate = lazy(() => import("@/pages/coupon/update"));
+const Location = lazy(() => import("@/pages/location/index"));
+const LocationCreate = lazy(() => import("@/pages/location/create"))
+const LocationUpdate = lazy(() => import("@/pages/location/update"))
 
 const ProtectedRoutes: RouteObject[] = [
   { path: '/', element: <DashBoard /> },
@@ -51,6 +54,9 @@ const ProtectedRoutes: RouteObject[] = [
    { path: '/coupon/create', element: <CouponCreate />, },
    { path: '/coupon/view/:id', element: <CouponUpdate /> },
    { path: '/favorite', element: <Favorite /> },
+   { path: '/location', element: <Location /> },
+   { path: '/location/create', element: <LocationCreate /> },
+   { path: '/location/view/:id', element: <LocationUpdate /> },
 ];
 
 export default ProtectedRoutes;

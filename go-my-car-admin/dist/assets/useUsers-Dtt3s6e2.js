@@ -1,1 +1,0 @@
-import{y as t,z as u,A as a,u as o}from"./index-CiOuKirm.js";const s=u,r={GET_USERS:s+"/api/getuser",ACTIVE_INACTIVE:s+"/api/edituser"},c=async e=>t("get",r.GET_USERS,null,{params:e}),E=async e=>t("post",r.ACTIVE_INACTIVE,e),i=["users"],A=e=>a({queryKey:[...i,e],queryFn:()=>c(e),staleTime:5*60*1e3}),S=e=>o({mutationFn:E,retry:!1,onSuccess:n=>{e(n)}});export{S as a,A as u};

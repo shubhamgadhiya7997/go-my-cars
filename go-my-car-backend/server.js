@@ -14,6 +14,8 @@ const setting = require("./routes/Api/setting");
 const coupon = require("./routes/Api/coupon");
 const review = require("./routes/Api/review");
 const favorite = require("./routes/Api/favorite");
+const location = require("./routes/Api/location");
+
 const admin = require("./routes/Api/admin");
 const cron = require("node-cron");
 const { carBooking } = require("./routes/controller/booking");
@@ -59,6 +61,8 @@ app.use("/api",setting);
 app.use("/api",coupon);
 app.use("/api",review);
 app.use("/api",favorite);
+app.use("/api",location);
+
 app.use("/api/admin",admin);
 
 // const redisHost = process.env.REDIS_HOST || 'localhost';

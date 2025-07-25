@@ -4,7 +4,7 @@ const {getPartner, postPartner, getPartnerId, updatePartner} = require("../contr
 const protected = require("../../middleware/protected");
 
 router.get("/getpartner",protected, getPartner);
-router.post("/addpartner",protected, postPartner);
+router.post("/addpartner", postPartner);
 router.put("/updatepartner/:id",protected, updatePartner);
 router.get("/viewpartner/:id",protected, getPartnerId);
 module.exports = router;

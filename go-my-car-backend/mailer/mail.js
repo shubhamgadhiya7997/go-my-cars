@@ -91,4 +91,61 @@ const SendBooking = async (email,fullName, start, end, location) => {
 
     }
 }
-module.exports = { replySendMail, SendBooking };
+
+const SendPartnerMail = async ( fullName, email, phoneNumber, location, registrationDate,carName,CarNumber) => {
+
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: "info@gomycars.com",
+      subject: `🚨 New Partner Registration - Go-My-Car`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+          <h2 style="color: #e53935;">📥 New Partner Registered</h2>
+          <p>A new partner has registered with the following details:</p>
+
+          <table style="border-collapse: collapse; width: 100%; margin-top: 20px;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><strong>Full Name:</strong></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${fullName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${email}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><strong>Phone Number:</strong></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${phoneNumber}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><strong>Location:</strong></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${location}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><strong>Car Registration Date:</strong></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${registrationDate}</td>
+            </tr>
+             <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><strong>Car Name:</strong></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${carName}</td>
+            </tr>
+             <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><strong>Car Number:</strong></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${CarNumber}</td>
+            </tr>
+          </table>
+
+          <p style="margin-top: 20px;">Please follow up with the partner if needed.</p>
+          <p>Regards,<br/><strong>Go-My-Car</strong></p>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("📩 Admin notification email sent successfully.");
+  } catch (error) {
+    console.error("❌ Failed to send admin email:", error);
+  }
+}
+
+module.exports = { replySendMail, SendBooking, SendPartnerMail };
