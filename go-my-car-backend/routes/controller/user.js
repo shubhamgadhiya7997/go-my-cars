@@ -8,7 +8,7 @@ const { default: mongoose } = require("mongoose");
 const register = async (req, res) => {
     try {
         const { fullName, email, phoneNumber, password, isIndian } = req.body;
-        if (!fullName || !email || !phoneNumber || !password || !isIndian) {
+        if (!fullName || !email || !phoneNumber || !password || typeof isIndian === "undefined") {
             return BadRequest(res, "All filed is required")
 
         }
