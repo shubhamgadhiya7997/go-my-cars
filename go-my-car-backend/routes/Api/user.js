@@ -14,7 +14,7 @@ router.post("/editprofile", protected, upload.single('profilePic'), editProfile)
 router.post("/changepassword", protected, changePassword)
 router.post("/deleteuser", protected, deleteUser)
 router.get("/getuserdetails", protected, getUserDetails)
-router.post("/uploadimage",validate, upload.array('images'), uploadImage)
+router.post("/uploadimage", upload.array('images'),validate, uploadImage)
 //admin side
 router.get("/getuser", protected, getUser)
 router.post("/edituser", protected, activateInactivateUser)
