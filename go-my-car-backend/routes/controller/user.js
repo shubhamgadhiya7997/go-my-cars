@@ -4,10 +4,11 @@ const bcrypt = require("bcrypt");
 const { SuccessCreated, SuccessOk, BadRequest, InternalServerError, NotFound } = require("../../Response/response");
 const { getDataByPaginate } = require("../../common/common");
 const { default: mongoose } = require("mongoose");
+
 const register = async (req, res) => {
     try {
-        const { fullName, email, phoneNumber, password } = req.body;
-        if (!fullName || !email || !phoneNumber || !password) {
+        const { fullName, email, phoneNumber, password, isIndian } = req.body;
+        if (!fullName || !email || !phoneNumber || !password || !isIndian) {
             return BadRequest(res, "All filed is required")
 
         }
@@ -27,7 +28,7 @@ const register = async (req, res) => {
         const hasedPassword = await bcrypt.hash(req.body.password, salt);
         const newPassword = hasedPassword;
 
-        const userdata = new user({ fullName, email, phoneNumber, password: newPassword })
+        const userdata = new user({ fullName, email, phoneNumber, password: newPassword, isIndian })
         await userdata.save();
         return SuccessCreated(res, "User registration successfully", userdata)
 
@@ -63,8 +64,8 @@ const login = async (req, res) => {
             { $set: { fcmToken: fcmToken } },
             { new: true }
         );
-        const payload = {...userDetails.toObject(), userType: 'user'}
-       console.log("payload", payload)
+        const payload = { ...userDetails.toObject(), userType: 'user' }
+        console.log("payload", payload)
         const tokendata = await new Promise((resolve, reject) => {
             jwt.sign(
                 { payload },
@@ -170,7 +171,7 @@ const editProfile = async (req, res) => {
         if (email || phoneNumber) {
 
             const existingUser = await user.findOne({
-                _id: { $ne:new mongoose.Types.ObjectId(req.user._id) }, isDeleted: false,
+                _id: { $ne: new mongoose.Types.ObjectId(req.user._id) }, isDeleted: false,
                 $or: [
                     { email: email },
                     { phoneNumber: phoneNumber }
@@ -200,7 +201,7 @@ const editProfile = async (req, res) => {
 
         console.log(" req.user._id ", req.user)
         const userdata = await user.findOneAndUpdate(
-            { _id:new mongoose.Types.ObjectId(req.user._id) },
+            { _id: new mongoose.Types.ObjectId(req.user._id) },
             { $set: updateFields },
             { new: true }
         )
@@ -350,14 +351,37 @@ const deleteUser = async (req, res) => {
     }
 }
 
-const getUserDetails = async (req,res) => {
-    try{
-        const userdata = await user.findById({_id : new mongoose.Types.ObjectId(req.user._id)});
+const getUserDetails = async (req, res) => {
+    try {
+        const userdata = await user.findById({ _id: new mongoose.Types.ObjectId(req.user._id) });
         return SuccessOk(res, "user details find successfully", userdata)
-    }catch (error) {
+    } catch (error) {
         console.log("err", error);
         return InternalServerError(res, "Internal Server Error", error.message)
     }
 }
+const uploadImage = async (req, res) => {
+    try {
+   
+        if (!req.body.userId) {
+            return BadRequest(res, "UserId filed is required")
+        }
+         const imagePaths = req.files.map(file => file.filename);
+        console.log("imagePaths", imagePaths);
 
-module.exports = { register, login, forget, verify, resetPassword, editProfile, changePassword, getUser,getUserDetails, activateInactivateUser, deleteUser }
+
+        const userdata = await user.findOneAndUpdate(
+            { _id: req.body.userId },
+            { $set: { image: imagePaths, isVerify: true } },
+            { new: true }
+        );
+
+        return SuccessOk(res, "Images uploaded successfully", userdata)
+    } catch (error) {
+        console.error("Upload error:", error);
+        return InternalServerError(res, "Internal Server Error", error.message)
+    }
+};
+
+
+module.exports = { register, login, forget, verify, resetPassword, editProfile, uploadImage, changePassword, getUser, getUserDetails, activateInactivateUser, deleteUser }
